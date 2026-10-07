@@ -12,6 +12,7 @@ const { csrfProtection } = require('./src/security');
 const { loadUser, locals } = require('./src/middleware');
 const limits = require('./src/limits');
 const checkout = require('./src/routes/checkout');
+const { ensureOwnerFromEnv } = require('./src/owner');
 
 const app = express();
 app.disable('x-powered-by');
@@ -41,7 +42,9 @@ app.use(
         fontSrc: ["'self'"],
         connectSrc: ["'self'"],
         workerSrc: ["'self'", 'blob:'],
-        formAction: ["'self'", 'https://www.payfast.co.za', 'https://sandbox.payfast.co.za'],
+        // Live checkouts post to www.payfast.co.za, which redirects to payment.payfast.io; browsers apply
+        // form-action to redirects too, so both must be allowed.
+        formAction: ["'self'", 'https://www.payfast.co.za', 'https://sandbox.payfast.co.za', 'https://*.payfast.io'],
         frameAncestors: ["'none'"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
@@ -70,6 +73,14 @@ app.use('/vendor/gsap', express.static(nodeModule('gsap/dist'), cacheFor('30d'))
 app.use('/vendor/lenis', express.static(nodeModule('lenis/dist'), cacheFor('30d')));
 app.use('/vendor/fonts/manrope', express.static(nodeModule('@fontsource-variable/manrope/files'), cacheFor('365d')));
 app.use('/vendor/fonts/cormorant', express.static(nodeModule('@fontsource/cormorant-garamond/files'), cacheFor('365d')));
+
+// ------------------------------------------------------------------ health check (used by the host)
+
+// Also echoes the caller's IP, which shows whether TRUST_PROXY matches the host's proxy setup.
+app.get('/healthz', (req, res) => {
+  db.prepare('SELECT 1').get();
+  res.set('Cache-Control', 'no-store').json({ status: 'ok', ip: req.ip });
+});
 
 // ------------------------------------------------------------------ PayFast ITN (raw body, no session, no CSRF)
 
@@ -131,12 +142,21 @@ app.use((err, req, res, next) => {
   });
 });
 
-const server = app.listen(config.port, config.host, () => {
-  console.log(`JE Fitness running at ${config.publicUrl} (listening on ${config.host}:${config.port})`);
-  console.log(`PayFast mode: ${config.payfast.sandbox ? 'SANDBOX (test payments)' : 'LIVE'}`);
-});
+let server;
+ensureOwnerFromEnv()
+  .then(() => {
+    server = app.listen(config.port, config.host, () => {
+      console.log(`JE Fitness running at ${config.publicUrl} (listening on ${config.host}:${config.port})`);
+      console.log(`PayFast mode: ${config.payfast.sandbox ? 'SANDBOX (test payments)' : 'LIVE'}`);
+    });
+  })
+  .catch((err) => {
+    console.error(`[setup] ${err.message}`);
+    process.exit(1);
+  });
 
 function shutdown() {
+  if (!server) process.exit(0);
   server.close(() => {
     db.close();
     process.exit(0);

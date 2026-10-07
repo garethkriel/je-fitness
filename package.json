@@ -2,10 +2,10 @@
   "name": "je-fitness",
   "version": "1.0.0",
   "private": true,
-  "description": "JE Fitness website: one-on-one and online training packages, PayFast payments and an owner dashboard for clients and payments.",
+  "description": "JE Fitness website: online personal training packages, PayFast payments and an owner dashboard for clients and payments.",
   "main": "server.js",
   "engines": {
-    "node": ">=22.13"
+    "node": ">=22.13 <25"
   },
   "scripts": {
     "start": "node server.js",

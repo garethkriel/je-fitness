@@ -107,13 +107,24 @@ PayFast's shared test merchant works for checkout, but its passphrase is unknown
 
 ## 6. Hosting
 
-This is a Node.js app that stores its data in a single SQLite file (`data/je-fitness.sqlite`). Any host that runs Node 22+ **with persistent disk storage** works, for example:
+This is a Node.js app that stores its data in a single SQLite file. It needs a host that runs Node 22+ **with persistent disk storage**. Serverless hosts such as Vercel or Netlify, and free plans without a disk, are **not** suitable.
 
-- A small VPS behind Nginx with HTTPS.
-- Render or Railway with a persistent volume for `DB_PATH`.
-- A cPanel host with "Setup Node.js App".
+### Render (set up)
 
-Serverless hosts such as Vercel or Netlify are **not** suitable. **Back up the database file regularly.** It holds all clients and payments, and Jackie's login.
+`render.yaml` describes the whole setup: a web service in Frankfurt (closest to South Africa) on the `0.5c-512mb` plan, a 1 GB disk at `/var/data` for the database, live PayFast payments and a health check at `/healthz`.
+
+1. Sign in at <https://dashboard.render.com> with GitHub and add a payment method.
+2. **New → Blueprint**, pick the `je-fitness` repository and click **Apply**. Or open <https://render.com/deploy?repo=https://github.com/garethkriel/je-fitness>.
+3. Render asks for three secret values:
+   - `PAYFAST_MERCHANT_ID` and `PAYFAST_MERCHANT_KEY`: Jackie's live PayFast details (the same as in `.env`).
+   - `ADMIN_PASSWORD`: the password for Jackie's dashboard login (username `jackie`). It's only used on the very first start. Delete it from **Environment** after the first sign-in.
+4. Wait for the deploy to finish, then open the `https://je-fitness.onrender.com` address Render shows (the name can have a suffix if it's taken).
+
+Every push to the `main` branch on GitHub deploys automatically. With a disk attached, each deploy takes the site offline for a few seconds.
+
+**Custom domain:** in Render open the service, then **Settings → Custom Domains**, add the domain (e.g. `jefitness.co.za`) and create the DNS records Render shows at the domain registrar. Then add an environment variable `PUBLIC_URL=https://jefitness.co.za` so payment links and PayFast notifications use it.
+
+**Back up the database** (`/var/data/je-fitness.sqlite`) regularly: it holds all clients and payments, and Jackie's login. Render keeps daily snapshots of the disk (see the service's **Disks** page), which can be restored if something goes wrong.
 
 ## 7. Security
 

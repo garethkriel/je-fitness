@@ -12,6 +12,7 @@ function loadConfig(vars) {
     ...process.env,
     NODE_ENV: '',
     PUBLIC_URL: '',
+    RENDER_EXTERNAL_URL: '',
     SESSION_SECRET: 'x'.repeat(48),
     PAYFAST_SANDBOX: '',
     PAYFAST_MERCHANT_ID: 'LIVE-ID',
@@ -22,12 +23,12 @@ function loadConfig(vars) {
     PAYFAST_SANDBOX_PASSPHRASE: '',
     ...vars,
   };
-  const child = spawnSync(process.execPath, ['-e', "process.stdout.write(JSON.stringify(require('./src/config').payfast))"], {
+  const child = spawnSync(process.execPath, ['-e', "const c = require('./src/config'); process.stdout.write(JSON.stringify({ payfast: c.payfast, publicUrl: c.publicUrl }))"], {
     cwd: ROOT,
     env,
     encoding: 'utf8',
   });
-  return child.status === 0 ? { payfast: JSON.parse(child.stdout) } : { error: child.stderr };
+  return child.status === 0 ? JSON.parse(child.stdout) : { error: child.stderr };
 }
 
 test('test payments on a development machine, even with live details saved', () => {
@@ -67,4 +68,12 @@ test('live payments refuse to start without a public https address', () => {
 test('live payments refuse to start without merchant details', () => {
   const { error } = loadConfig({ NODE_ENV: 'production', PUBLIC_URL: 'https://jefitness.co.za', PAYFAST_MERCHANT_KEY: '' });
   assert.match(error || '', /PAYFAST_MERCHANT_KEY/);
+});
+
+test('on Render the site uses its onrender.com address unless PUBLIC_URL is set', () => {
+  const render = { NODE_ENV: 'production', RENDER_EXTERNAL_URL: 'https://je-fitness.onrender.com' };
+  const onRender = loadConfig(render);
+  assert.equal(onRender.publicUrl, 'https://je-fitness.onrender.com');
+  assert.equal(onRender.payfast.sandbox, false);
+  assert.equal(loadConfig({ ...render, PUBLIC_URL: 'https://jefitness.co.za/' }).publicUrl, 'https://jefitness.co.za');
 });

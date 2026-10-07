@@ -24,7 +24,9 @@ function parseTrustProxy(value) {
 }
 
 const port = Number(env.PORT) || 3000;
-const publicUrl = (env.PUBLIC_URL || `http://localhost:${port}`).replace(/\/+$/, '');
+// On Render, RENDER_EXTERNAL_URL is the service's https://<name>.onrender.com address; PUBLIC_URL overrides it
+// (set PUBLIC_URL once a custom domain such as https://jefitness.co.za is connected).
+const publicUrl = (env.PUBLIC_URL || env.RENDER_EXTERNAL_URL || `http://localhost:${port}`).replace(/\/+$/, '');
 
 let sessionSecret = env.SESSION_SECRET || '';
 if (sessionSecret.length < 32) {

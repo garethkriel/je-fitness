@@ -1,0 +1,41 @@
+# Render Blueprint for the JE Fitness site. Reference: https://render.com/docs/blueprint-spec
+# Create it in the Render dashboard with New > Blueprint and pick this repository. Render then asks for the
+# values marked "sync: false" (they are secrets, so they are never stored in this public repository).
+services:
+  - type: web
+    name: je-fitness
+    runtime: node
+    # Cheapest plan that supports a persistent disk. Free plans lose every client and payment on each restart.
+    plan: 0.5c-512mb
+    # Closest Render region to South Africa.
+    region: frankfurt
+    buildCommand: npm ci --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit
+    # The SQLite database (clients, payments, Jackie's login) lives here and survives deploys and restarts.
+    disk:
+      name: je-fitness-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      # Production also switches PayFast to live payments.
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /var/data/je-fitness.sqlite
+      # Proxy hops in front of the app on Render, so rate limits and PayFast's IP check see the real caller.
+      - key: TRUST_PROXY
+        value: "3"
+      - key: SESSION_SECRET
+        generateValue: true
+      # PUBLIC_URL defaults to the service's https://...onrender.com address. Set it when a custom domain is added.
+      - key: PAYFAST_MERCHANT_ID
+        sync: false
+      - key: PAYFAST_MERCHANT_KEY
+        sync: false
+      # Creates the dashboard login on the very first start only. It can be deleted after the first sign-in.
+      - key: ADMIN_USERNAME
+        value: jackie
+      - key: ADMIN_PASSWORD
+        sync: false
