@@ -105,6 +105,9 @@ module.exports = {
   trustProxy: parseTrustProxy(env.TRUST_PROXY),
   dbPath: path.resolve(ROOT, env.DB_PATH || 'data/je-fitness.sqlite'),
   dbRequireExistingDir: bool(env.DB_REQUIRE_DISK, false),
+  // A preview copy of the site: labelled "Preview" on every page and hidden from search engines.
+  preview: bool(env.SITE_PREVIEW, false),
+  demoData: bool(env.DEMO_DATA, false),
   sessionSecret,
   payfast,
 };

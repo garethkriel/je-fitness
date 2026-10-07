@@ -58,6 +58,7 @@ app.use(
 );
 app.use((req, res, next) => {
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()');
+  if (config.preview) res.setHeader('X-Robots-Tag', 'noindex, nofollow');
   next();
 });
 
@@ -145,6 +146,7 @@ app.use((err, req, res, next) => {
 let server;
 ensureOwnerFromEnv()
   .then(() => {
+    if (config.demoData) require('./src/demo').seedDemoData();
     server = app.listen(config.port, config.host, () => {
       console.log(`JE Fitness running at ${config.publicUrl} (listening on ${config.host}:${config.port})`);
       console.log(`PayFast mode: ${config.payfast.sandbox ? 'SANDBOX (test payments)' : 'LIVE'}`);

@@ -21,3 +21,4 @@
 </head>
 <body class="<%= locals.app ? 'is-app' : 'is-site' %> <%= locals.page ? 'page-' + page : '' %>">
 <a class="skip-link" href="#main">Skip to content</a>
+<% if (locals.preview) { %><p class="preview-badge" role="note"><strong>Preview</strong> Test payments only, nothing is charged</p><% } %>

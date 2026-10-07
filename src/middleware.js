@@ -64,6 +64,7 @@ function locals(req, res, next) {
   res.locals.user = req.user;
   res.locals.path = req.path;
   res.locals.sandbox = config.payfast.sandbox;
+  res.locals.preview = config.preview;
   res.locals.year = new Date().getFullYear();
   res.locals.csrf = () => csrfToken(req);
   res.locals.packageOptions = () => listPackages();
