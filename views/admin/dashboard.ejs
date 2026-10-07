@@ -1,0 +1,145 @@
+<%- include('_top') %>
+<%
+  const hour = Number(new Intl.DateTimeFormat('en-ZA', { hour: 'numeric', hourCycle: 'h23', timeZone: 'Africa/Johannesburg' }).format(new Date()));
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const cards = [
+    ['current', 'circle-check', 'paid and not due this week'],
+    ['due', 'hourglass', 'period ends within 7 days'],
+    ['overdue', 'circle-alert', 'monthly package not renewed'],
+    ['unpaid', 'clock', 'signed up but never paid'],
+  ];
+  const link = (status) => `/admin${status ? `?status=${status}` : ''}#clients`;
+  const owing = counts.overdue + counts.unpaid;
+%>
+<div class="admin-head">
+  <div>
+    <p class="eyebrow"><span class="dot"></span> <%= h.date(new Date().toISOString()) %></p>
+    <h1 class="display-md"><%= greeting %>, <em><%= user.name.split(' ')[0] %>.</em></h1>
+    <p class="muted small">
+      <% if (!total) { %>No clients yet. They appear here as soon as someone pays on the website, or when you add one.
+      <% } else if (owing) { %><strong class="text-bad"><%= owing %> client<%= owing === 1 ? '' : 's' %></strong> still need<%= owing === 1 ? 's' : '' %> to pay. <%= counts.current %> of <%= total %> are up to date.
+      <% } else { %>Everyone is paid up. <%= counts.current %> of <%= total %> clients are up to date.<% } %>
+    </p>
+  </div>
+  <div class="admin-head-actions">
+    <a class="btn btn-ghost btn-sm" href="/admin/clients/new"><%- h.icon('user-plus', { size: 16 }) %> Add client</a>
+    <a class="btn btn-ghost btn-sm" href="/admin/clients.csv"><%- h.icon('download', { size: 16 }) %> Export</a>
+  </div>
+</div>
+
+<div class="stat-row status-cards">
+  <% cards.forEach(([key, icon, sub]) => { %>
+    <a class="stat stat-link status-card status-card-<%= STATUS[key].cls %><%= filters.status === key ? ' is-selected' : '' %>" href="<%= filters.status === key ? link('') : link(key) %>" <%- filters.status === key ? 'aria-current="true"' : '' %>>
+      <span class="stat-label"><%- h.icon(icon, { size: 16 }) %> <%= STATUS[key].label %></span>
+      <strong><%= counts[key] %></strong>
+      <span class="stat-unit"><%= sub %></span>
+    </a>
+  <% }) %>
+  <a class="stat stat-link" href="/admin/payments?status=paid">
+    <span class="stat-label"><%- h.icon('credit-card', { size: 16 }) %> Paid this month</span>
+    <strong><%= h.money(revenueMonth) %></strong>
+    <span class="stat-unit"><%= paymentsMonth %> payment<%= paymentsMonth === 1 ? '' : 's' %></span>
+  </a>
+</div>
+
+<section id="clients" aria-labelledby="clients-title" class="roster">
+  <div class="roster-head">
+    <h2 class="panel-title" id="clients-title"><%- h.icon('users', { size: 18 }) %> Clients &amp; payments</h2>
+    <form class="filter-bar compact" method="get" action="/admin" role="search">
+      <% if (filters.status) { %><input type="hidden" name="status" value="<%= filters.status %>"><% } %>
+      <div class="field search-field">
+        <label for="q" class="sr-only">Search clients</label>
+        <%- h.icon('search', { size: 18 }) %>
+        <input id="q" name="q" type="search" value="<%= filters.q %>" placeholder="Search by name, email or phone" maxlength="100">
+      </div>
+    </form>
+  </div>
+
+  <nav class="chip-row" aria-label="Show clients by payment status">
+    <a class="chip<%= !filters.status ? ' is-active' : '' %>" href="/admin<%= filters.q ? '?q=' + encodeURIComponent(filters.q) : '' %>#clients">All <span class="chip-count"><%= total %></span></a>
+    <% STATUS_ORDER.forEach((key) => { if (!counts[key] && filters.status !== key) return; %>
+      <a class="chip chip-<%= STATUS[key].cls %><%= filters.status === key ? ' is-active' : '' %>" href="/admin?status=<%= key %><%= filters.q ? '&q=' + encodeURIComponent(filters.q) : '' %>#clients" title="<%= STATUS[key].help %>"><%= STATUS[key].label %> <span class="chip-count"><%= counts[key] %></span></a>
+    <% }) %>
+  </nav>
+
+  <% if (!clients.length) { %>
+    <div class="empty-state">
+      <%- h.icon('users', { size: 30 }) %>
+      <h3><%= total ? 'No clients match' : 'No clients yet' %></h3>
+      <p class="muted"><%= total ? 'Try a different search or status.' : 'Clients are added automatically when they pay on the website. You can also add one yourself.' %></p>
+      <% if (total) { %><a class="btn btn-ghost btn-sm" href="/admin#clients">Show all clients</a><% } else { %><a class="btn btn-gold btn-sm" href="/admin/clients/new"><%- h.icon('user-plus', { size: 16 }) %> Add client</a><% } %>
+    </div>
+  <% } else { %>
+    <%- include('_client-table') %>
+  <% } %>
+</section>
+
+<div class="admin-grid dashboard-lower">
+  <section class="panel" aria-labelledby="recent-payments">
+    <div class="panel-head">
+      <h2 class="panel-title" id="recent-payments"><%- h.icon('receipt', { size: 18 }) %> Latest payments</h2>
+      <a class="panel-link" href="/admin/payments">All payments <%- h.icon('arrow-right', { size: 14 }) %></a>
+    </div>
+    <% if (!payments.length) { %>
+      <p class="muted small empty-line">No payments yet. They appear here as soon as PayFast confirms them.</p>
+    <% } else { %>
+      <ul class="row-list">
+        <% payments.forEach((o) => { %>
+          <li>
+            <a href="/admin/clients/<%= o.client_id %>#payments">
+              <span class="avatar" aria-hidden="true"><%= o.first_name[0] %><%= (o.last_name || ' ')[0] %></span>
+              <span class="row-main"><strong><%= o.first_name %> <%= o.last_name %></strong><span class="muted small"><%= o.package_name %> &middot; <%= METHODS[o.method] || o.method %></span></span>
+              <span class="row-amount"><strong><%= h.money(o.amount_cents) %></strong><span class="muted small"><%= h.ago(o.paid_at) %></span></span>
+            </a>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </section>
+
+  <section class="panel" aria-labelledby="new-enquiries">
+    <div class="panel-head">
+      <h2 class="panel-title" id="new-enquiries"><%- h.icon('inbox', { size: 18 }) %> New enquiries</h2>
+      <a class="panel-link" href="/admin/enquiries">All enquiries <%- h.icon('arrow-right', { size: 14 }) %></a>
+    </div>
+    <% if (!enquiries.length) { %>
+      <p class="muted small empty-line"><%- h.icon('circle-check', { size: 16 }) %> You're all caught up.</p>
+    <% } else { %>
+      <ul class="row-list">
+        <% enquiries.forEach((e) => { %>
+          <li>
+            <a href="/admin/enquiries#enquiry-<%= e.id %>">
+              <span class="avatar" aria-hidden="true"><%= e.name.trim()[0] %></span>
+              <span class="row-main"><strong><%= e.name %></strong><span class="muted small truncate"><%= e.message %></span></span>
+              <span class="muted small"><%= h.ago(e.created_at) %></span>
+            </a>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </section>
+
+  <details class="panel span-2 activity-log">
+    <summary class="panel-title"><%- h.icon('shield', { size: 18 }) %> Security &amp; activity log</summary>
+    <% if (!activity.length) { %>
+      <p class="muted small empty-line">No activity yet.</p>
+    <% } else { %>
+    <div class="table-wrap">
+      <table class="table compact">
+        <thead><tr><th scope="col">When</th><th scope="col">Event</th><th scope="col">Detail</th><th scope="col">IP</th></tr></thead>
+        <tbody>
+          <% activity.forEach((a) => { %>
+            <tr class="<%= a.action === 'login_failed' ? 'row-warn' : '' %>">
+              <td class="muted"><%= h.ago(a.at) %></td>
+              <td><%= a.action.replace(/_/g, ' ') %></td>
+              <td><%= a.detail || a.username || a.email || '' %></td>
+              <td class="muted mono"><%= a.ip || '' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </details>
+</div>
+<%- include('_bottom') %>

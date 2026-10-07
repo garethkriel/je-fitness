@@ -1,0 +1,23 @@
+<%- include('partials/head', { page: 'auth', noindex: true }) %>
+<header class="site-header is-solid">
+  <div class="container nav-inner">
+    <a class="brand" href="/" aria-label="<%= site.brand %>, home">
+      <span class="brand-mark" aria-hidden="true"><%= site.monogram %></span>
+      <span class="brand-text"><span class="brand-name"><%= site.brand %></span><span class="brand-sub"><%= site.tagline %></span></span>
+    </a>
+  </div>
+</header>
+<main id="main" class="auth-main">
+  <div class="hero-bg" aria-hidden="true"><div class="hero-glow"></div><div class="hero-lines"></div></div>
+  <div class="auth-card result-card">
+    <p class="error-code" aria-hidden="true"><%= status %></p>
+    <h1 class="display-md"><%= title %></h1>
+    <p class="muted"><%= message %></p>
+    <div class="result-actions">
+      <a class="btn btn-gold btn-block" href="/">Back to home</a>
+      <a class="btn btn-ghost btn-block" href="mailto:<%= site.email %>">Email <%= site.coach %></a>
+    </div>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<%- include('_top') %>
+<div class="admin-head">
+  <div>
+    <h1 class="display-md">My <em>account</em></h1>
+    <p class="muted small">Your login details for this dashboard.</p>
+  </div>
+</div>
+
+<div class="grid-2 account-grid">
+  <form method="post" action="/admin/account/details" class="panel form">
+    <input type="hidden" name="_csrf" value="<%= csrf() %>">
+    <h2 class="panel-title"><%- h.icon('user', { size: 18 }) %> Login details</h2>
+    <div class="field">
+      <label for="acc-name">Your name</label>
+      <input id="acc-name" name="name" value="<%= owner.name %>" required maxlength="60" autocomplete="name">
+    </div>
+    <div class="field">
+      <label for="acc-username">Username</label>
+      <input id="acc-username" name="username" value="<%= owner.username || '' %>" required minlength="3" maxlength="30" autocomplete="username" autocapitalize="none" spellcheck="false" aria-describedby="acc-username-hint">
+      <p class="hint" id="acc-username-hint">Letters, numbers, dots, dashes and underscores.</p>
+    </div>
+    <div class="field">
+      <label for="acc-email">Email</label>
+      <input id="acc-email" name="email" type="email" value="<%= owner.email %>" required maxlength="254" autocomplete="email">
+      <p class="hint">You can also sign in with this email address.</p>
+    </div>
+    <button class="btn btn-ghost btn-sm form-submit" type="submit"><%- h.icon('save', { size: 16 }) %> Save details</button>
+  </form>
+
+  <form method="post" action="/admin/account/password" class="panel form<%= weak ? ' panel-warn' : '' %>" data-busy-form>
+    <input type="hidden" name="_csrf" value="<%= csrf() %>">
+    <h2 class="panel-title"><%- h.icon('key-round', { size: 18 }) %> Change password</h2>
+    <% if (weak) { %>
+      <div class="form-alert"><%- h.icon('circle-alert', { size: 20 }) %><div><strong>Your current password is easy to guess.</strong> This dashboard holds your clients' personal details and payment records, so choose a strong one before the site goes live.</div></div>
+    <% } %>
+    <div class="field">
+      <label for="pw-current">Current password</label>
+      <input id="pw-current" name="current_password" type="password" autocomplete="current-password" required maxlength="200">
+    </div>
+    <div class="field">
+      <label for="pw-new">New password</label>
+      <input id="pw-new" name="new_password" type="password" autocomplete="new-password" required minlength="10" maxlength="128" aria-describedby="pw-new-hint">
+      <p class="hint" id="pw-new-hint">At least 10 characters. A short phrase of three or four words works well and is easy to remember.</p>
+    </div>
+    <div class="field">
+      <label for="pw-confirm">Repeat new password</label>
+      <input id="pw-confirm" name="new_password_confirm" type="password" autocomplete="new-password" required minlength="10" maxlength="128">
+    </div>
+    <button class="btn btn-gold btn-sm form-submit" type="submit"><%- h.icon('lock', { size: 16 }) %> Change password</button>
+  </form>
+</div>
+<%- include('_bottom') %>

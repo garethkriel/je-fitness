@@ -1,0 +1,32 @@
+<%- include('../partials/head', { page: 'auth' }) %>
+<%- include('../partials/nav') %>
+<main id="main" class="auth-main">
+  <div class="hero-bg" aria-hidden="true"><div class="hero-glow"></div><div class="hero-lines"></div></div>
+  <div class="auth-card" data-intro>
+    <span class="brand-mark large" aria-hidden="true"><%= site.monogram %></span>
+    <h1 class="display-md">Owner <em>sign in.</em></h1>
+    <p class="muted">Sign in to manage clients and payments.</p>
+    <%- include('../partials/flash') %>
+    <% if (error) { %>
+      <div class="form-alert" role="alert"><%- h.icon('circle-alert', { size: 20 }) %><div><%= error %></div></div>
+    <% } %>
+    <form method="post" action="/login" class="form" data-busy-form>
+      <input type="hidden" name="_csrf" value="<%= csrf() %>">
+      <input type="hidden" name="returnTo" value="<%= returnTo %>">
+      <div class="field">
+        <label for="login-username">Username or email</label>
+        <input id="login-username" name="username" type="text" value="<%= username %>" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="254" <%= username ? '' : 'autofocus' %>>
+      </div>
+      <div class="field password-field">
+        <label for="login-password">Password</label>
+        <div class="input-wrap">
+          <input id="login-password" name="password" type="password" autocomplete="current-password" required maxlength="200" <%= username ? 'autofocus' : '' %>>
+          <button type="button" class="input-btn" data-toggle-password aria-label="Show password"><%- h.icon('eye', { size: 18 }) %></button>
+        </div>
+      </div>
+      <button class="btn btn-gold btn-lg btn-block" type="submit">Sign in</button>
+    </form>
+    <p class="small muted auth-help">Looking to train with <%= site.coach %>? <a class="link" href="/packages">Choose a package</a>. No account needed.</p>
+  </div>
+</main>
+<%- include('../partials/scripts', { extraScripts: ['/js/forms.js'] }) %>

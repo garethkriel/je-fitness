@@ -1,0 +1,146 @@
+<%- include('partials/head') %>
+<%- include('partials/nav') %>
+<main id="main">
+  <%- include('partials/flash') %>
+
+  <section class="hero" data-hero>
+    <div class="hero-bg" aria-hidden="true">
+      <div class="hero-glow"></div>
+      <div class="hero-lines"></div>
+    </div>
+    <div class="hero-canvas scene" data-scene="dumbbell" aria-hidden="true"></div>
+
+    <div class="container hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow" data-intro><span class="dot"></span> Online coaching &middot; <%= site.city %></p>
+        <h1 class="display-xl" data-split>Choose your <em>commitment.</em></h1>
+        <p class="lead" data-intro>
+          Get coached by <%= site.coach %> on your own schedule: a diet plan built for you, a personalised training program
+          and a check-in every week, for clients in and around <%= site.city %>.
+        </p>
+        <div class="hero-ctas" data-intro>
+          <a class="btn btn-gold btn-lg" href="/packages" data-magnetic>See the packages <%- h.icon('arrow-right', { size: 18 }) %></a>
+          <a class="btn btn-ghost btn-lg" href="#how">How it works</a>
+        </div>
+        <p class="hero-note small" data-intro><%- h.icon('shield-check', { size: 16 }) %> Secure payment by card or EFT &middot; Cancel monthly plans any time</p>
+      </div>
+    </div>
+
+    <a class="hero-scroll" href="#stats" aria-label="Scroll down"><span>Scroll</span><i aria-hidden="true"></i></a>
+  </section>
+
+  <section class="stats-strip" id="stats" aria-label="At a glance">
+    <div class="container stats-grid" data-stagger>
+      <div class="stat-item"><strong>1 / week</strong><span>Coaching check-ins</span></div>
+      <div class="stat-item"><strong>Diet + training</strong><span>Plans built for you</span></div>
+      <div class="stat-item"><strong><%= site.city %></strong><span>Where <%= site.coach %> is based</span></div>
+      <% if (fromPrice) { %><div class="stat-item"><strong><%= h.money(fromPrice) %></strong><span>From, per month</span></div><% } %>
+    </div>
+  </section>
+
+  <section class="section section-dark about-teaser" aria-labelledby="coach-title">
+    <div class="container about-teaser-inner">
+      <div class="teaser-visual" data-reveal>
+        <div class="scene scene-frame" data-scene="kettlebell" aria-hidden="true"></div>
+        <div class="teaser-tag"><span class="brand-mark small" aria-hidden="true"><%= site.monogram %></span><span><%= site.location %></span></div>
+      </div>
+      <div class="teaser-copy">
+        <p class="eyebrow" data-reveal><span class="dot"></span> Your coach</p>
+        <h2 class="display-lg" id="coach-title" data-split>Train with <em><%= site.coach %>.</em></h2>
+        <a class="cred-badge" href="/about#qualifications" data-reveal>
+          <span class="pillar-icon small"><%- h.icon('graduation-cap', { size: 20 }) %></span>
+          <span><strong>Qualified personal trainer</strong><small><%= site.qualification.title %> &middot; <%= site.qualification.institution %> &middot; <%= site.qualification.accreditation %> accredited</small></span>
+          <%- h.icon('arrow-up-right', { size: 18 }) %>
+        </a>
+        <p class="lead muted" data-reveal><%= site.about.intro %></p>
+        <p class="muted" data-reveal><%= site.about.story.join(' ') %></p>
+        <ul class="check-list" data-stagger>
+          <% site.about.points.forEach((p) => { %><li><%- h.icon('check', { size: 18 }) %><span><%= p %></span></li><% }) %>
+        </ul>
+        <a class="btn btn-ghost" href="/about" data-reveal>More about <%= site.coach %> <%- h.icon('arrow-right', { size: 18 }) %></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="includes-title">
+    <div class="container">
+      <div class="section-head center" data-reveal>
+        <p class="eyebrow"><span class="dot"></span> Every package includes</p>
+        <h2 class="display-lg" id="includes-title" data-split>What you <em>get.</em></h2>
+      </div>
+      <div class="pillars" data-stagger>
+        <% site.onlineIncludes.forEach((item) => { %>
+          <article class="pillar">
+            <span class="pillar-icon"><%- h.icon(item.icon, { size: 26 }) %></span>
+            <h3><%= item.title %></h3>
+            <p class="muted"><%= item.text %></p>
+          </article>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <% for (let r = 0; r < 2; r++) { %>
+        <% ['Strength', 'Nutrition', 'Accountability', 'Consistency', 'Technique', 'Results'].forEach((w) => { %>
+          <span class="marquee-word"><%= w %></span><span class="marquee-sep"></span>
+        <% }) %>
+      <% } %>
+    </div>
+  </div>
+
+  <section class="section section-dark" id="packages" aria-labelledby="pkg-title">
+    <div class="container">
+      <div class="section-head split-head" data-reveal>
+        <div>
+          <p class="eyebrow"><span class="dot"></span> Online coaching</p>
+          <h2 class="display-lg" id="pkg-title" data-split>Pick your <em>program.</em></h2>
+        </div>
+        <p class="muted section-aside">Every package includes a diet plan, a training program and one check-in every week. Choose the commitment that suits you.</p>
+      </div>
+      <div class="pkg-grid" data-stagger>
+        <% packages.forEach((pkg) => { %><%- include('partials/package-card', { pkg, compact: true }) %><% }) %>
+      </div>
+      <p class="center small muted fine-print">Monthly packages can be cancelled any time &middot; Once-off programs are paid up front</p>
+    </div>
+  </section>
+
+  <section class="section" id="how" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <p class="eyebrow"><span class="dot"></span> The process</p>
+        <h2 class="display-lg" id="how-title" data-split>How it <em>works.</em></h2>
+      </div>
+      <ol class="steps" data-stagger>
+        <% site.process.forEach((step, i) => { %>
+          <li class="step">
+            <span class="step-num">0<%= i + 1 %></span>
+            <h3><%= step.title %></h3>
+            <p class="muted"><%= step.text %></p>
+          </li>
+        <% }) %>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section section-dark" id="faq" aria-labelledby="faq-title">
+    <div class="container faq-wrap">
+      <div class="section-head" data-reveal>
+        <p class="eyebrow"><span class="dot"></span> Questions</p>
+        <h2 class="display-lg" id="faq-title" data-split>Good to <em>know.</em></h2>
+        <p class="muted">Something else on your mind? <a class="link" href="mailto:<%= site.email %>">Email <%= site.coach %></a>.</p>
+      </div>
+      <div class="faq" data-stagger>
+        <% site.faqs.forEach((f) => { %>
+          <details class="faq-item">
+            <summary><span><%= f.q %></span><span class="faq-toggle" aria-hidden="true"><%- h.icon('plus', { size: 18 }) %></span></summary>
+            <div class="faq-body"><p class="muted"><%= f.a %></p></div>
+          </details>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+<%- include('partials/footer') %>
+<%- include('partials/scripts', { three: true }) %>

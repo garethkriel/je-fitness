@@ -1,0 +1,17 @@
+node_modules/
+
+# Secrets: Jackie's PayFast merchant key and the login secret live here. Never commit them.
+.env
+.env.*
+!.env.example
+
+# The database holds every client, payment and Jackie's login.
+data/
+*.sqlite
+*.sqlite-*
+
+# Local tooling and OS clutter
+.claude/
+*.log
+.DS_Store
+Thumbs.db

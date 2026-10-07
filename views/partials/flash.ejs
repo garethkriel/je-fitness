@@ -1,0 +1,11 @@
+<% const flashes = getFlashes(); if (flashes.length) { %>
+<div class="flash-stack" role="status" aria-live="polite">
+  <% flashes.forEach((f) => { %>
+    <div class="flash flash-<%= f.type %>" data-flash>
+      <%- h.icon(f.type === 'success' ? 'circle-check' : f.type === 'error' ? 'circle-alert' : 'info', { size: 20 }) %>
+      <p><%= f.message %></p>
+      <button type="button" class="flash-close" data-flash-close aria-label="Dismiss message"><%- h.icon('x', { size: 16 }) %></button>
+    </div>
+  <% }) %>
+</div>
+<% } %>

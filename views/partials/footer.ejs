@@ -1,0 +1,87 @@
+<% const enquiry = getEnquiry(); const ev = enquiry.values; const ee = enquiry.errors; %>
+<section class="contact section" id="contact" aria-labelledby="contact-title">
+  <div class="container">
+    <div class="contact-card" data-reveal>
+      <div class="contact-copy">
+        <p class="eyebrow"><span class="dot"></span> Get started</p>
+        <h2 class="display-md" id="contact-title">Talk to <em><%= site.coach %>.</em></h2>
+        <p class="muted">Not sure which package fits? Send a message and I'll come back to you <%= site.replyTime %>. Tell me your goal, how much time you have to train and what equipment you can use.</p>
+        <ul class="contact-list">
+          <li>
+            <a href="mailto:<%= site.email %>?subject=<%= encodeURIComponent('Personal training enquiry') %>">
+              <span class="contact-icon"><%- h.icon('mail') %></span>
+              <span><span class="contact-label">Email <%= site.coach %></span><span class="contact-value"><%= site.email %></span></span>
+            </a>
+          </li>
+          <li>
+            <div>
+              <span class="contact-icon"><%- h.icon('map-pin') %></span>
+              <span><span class="contact-label">Based in</span><span class="contact-value"><%= site.location %></span></span>
+            </div>
+          </li>
+        </ul>
+        <p class="small muted contact-ready">Ready already? You don't have to message first: <a class="link" href="/packages">pick a package and pay online</a>, and I'll reach out to set up your onboarding call.</p>
+      </div>
+
+      <form method="post" action="/enquiry" class="form enquiry-form" data-busy-form novalidate>
+        <input type="hidden" name="_csrf" value="<%= csrf() %>">
+        <div class="hp" aria-hidden="true"><label for="enq-website">Website</label><input id="enq-website" name="website" tabindex="-1" autocomplete="off"></div>
+        <% if (Object.keys(ee).length) { %>
+          <div class="form-alert" role="alert"><%- h.icon('circle-alert', { size: 20 }) %><div>Please check the highlighted fields.</div></div>
+        <% } %>
+        <%- include('field', { name: 'name', label: 'Your name', values: ev, errors: ee, id: 'enq-name', attrs: 'required maxlength="100" autocomplete="name"' }) %>
+        <div class="grid-2">
+          <%- include('field', { name: 'email', label: 'Email', type: 'email', values: ev, errors: ee, id: 'enq-email', attrs: 'required maxlength="254" autocomplete="email" inputmode="email"' }) %>
+          <%- include('field', { name: 'phone', label: 'Phone', type: 'tel', optional: true, values: ev, errors: ee, id: 'enq-phone', attrs: 'maxlength="16" autocomplete="tel" inputmode="tel"' }) %>
+        </div>
+        <%
+          const interestOptions = [['unsure', 'Not sure yet']].concat(
+            (locals.packages || packageOptions()).map((p) => [p.slug, p.name])
+          );
+        %>
+        <% if (interestOptions.length > 1) { %>
+          <%- include('field', { name: 'interest', label: 'Interested in', type: 'select', options: interestOptions, values: ev, errors: ee, value: 'unsure', id: 'enq-interest' }) %>
+        <% } %>
+        <%- include('field', { name: 'message', label: 'Message', type: 'textarea', rows: 4, values: ev, errors: ee, id: 'enq-message', attrs: 'required maxlength="2000"' }) %>
+        <button class="btn btn-gold btn-block" type="submit"><%- h.icon('send', { size: 18 }) %> Send message</button>
+        <p class="small muted center"><%= site.coach %> replies by email, usually <%= site.replyTime %>.</p>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a class="brand" href="/" aria-label="<%= site.brand %>, home">
+        <span class="brand-mark" aria-hidden="true"><%= site.monogram %></span>
+        <span class="brand-text"><span class="brand-name"><%= site.brand %></span><span class="brand-sub"><%= site.tagline %> · <%= site.city %></span></span>
+      </a>
+      <p class="muted small">Online coaching programs for clients in and around <%= site.city %>.</p>
+    </div>
+    <nav class="footer-links" aria-label="Footer">
+      <div>
+        <p class="footer-heading">Training</p>
+        <a href="/packages">All packages &amp; prices</a>
+        <a href="/#how">How it works</a>
+        <a href="/#faq">FAQ</a>
+      </div>
+      <div>
+        <p class="footer-heading">Contact</p>
+        <a href="mailto:<%= site.email %>"><%= site.email %></a>
+        <a href="/#contact">Send an enquiry</a>
+        <a href="/terms">Terms</a>
+        <a href="/privacy">Privacy</a>
+      </div>
+    </nav>
+    <div class="footer-secure">
+      <%- h.icon('shield-check', { size: 22 }) %>
+      <p class="small">Secure card &amp; EFT payments processed by <strong>PayFast</strong>. Your card details never touch this site.</p>
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    <p class="small muted">&copy; <%= year %> <%= site.brand %>. All rights reserved.</p>
+    <p class="small muted"><a class="link-plain" href="/login">Owner login</a></p>
+  </div>
+</footer>

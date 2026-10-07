@@ -1,0 +1,88 @@
+'use strict';
+// Default packages, written to the database on first start.
+// After that, edit names, prices and features from Dashboard > Packages.
+//   billing:   'monthly' (rolling, pay each month) or 'once' (paid up front for the whole block)
+//   period:    how long one payment covers
+
+module.exports = [
+  {
+    slug: 'online-junior-u18',
+    category: 'online',
+    label: 'Under 18s',
+    name: 'Junior U18',
+    tagline: 'Coaching built for under-18s, at a junior price.',
+    price: 500,
+    billing: 'monthly',
+    period: [1, 'month'],
+    maxAge: 17,
+    icon: 'star',
+    features: [
+      'Age-appropriate training program',
+      'Diet plan built for a growing body',
+      '1 check-in per week',
+      'Technique and safety first',
+      'Cancel any time',
+    ],
+  },
+  {
+    slug: 'online-lifestyle',
+    category: 'online',
+    label: 'Ongoing coaching',
+    name: 'Lifestyle Training',
+    tagline: 'Sustainable habits, coached month to month.',
+    price: 1000,
+    billing: 'monthly',
+    period: [1, 'month'],
+    icon: 'heart-pulse',
+    features: ['Custom diet plan', 'Personalised training program', '1 check-in per week', 'Lifestyle & habit coaching', 'Cancel any time'],
+  },
+  {
+    slug: 'online-month-to-month',
+    category: 'online',
+    label: 'Rolling program',
+    name: 'Month-to-Month Program',
+    tagline: 'Full online coaching, no lock-in.',
+    price: 1200,
+    billing: 'monthly',
+    period: [1, 'month'],
+    icon: 'refresh-cw',
+    features: ['Custom diet plan', 'Personalised training program', '1 check-in per week', 'Program updated every month', 'Cancel any time'],
+  },
+  {
+    slug: 'online-12-week',
+    category: 'online',
+    label: 'Transformation',
+    name: '12 Week Transformation',
+    tagline: 'A structured 12-week body transformation.',
+    price: 2000,
+    billing: 'once',
+    period: [12, 'week'],
+    icon: 'trophy',
+    features: [
+      'Custom diet plan',
+      'Personalised training program',
+      '1 check-in per week',
+      'Structured 12-week plan',
+      'Before & after progress tracking',
+    ],
+  },
+  {
+    slug: 'online-once-off',
+    category: 'online',
+    label: 'Once-off block',
+    name: 'Once-Off Program',
+    tagline: 'Three months of coaching, paid up front.',
+    price: 2800,
+    billing: 'once',
+    period: [3, 'month'],
+    priceNote: 'Works out to R933 / month',
+    icon: 'calendar-check',
+    features: [
+      'Custom diet plan',
+      'Personalised training program',
+      '1 check-in per week',
+      'Full 3 months of coaching',
+      'Cheaper than paying monthly',
+    ],
+  },
+];

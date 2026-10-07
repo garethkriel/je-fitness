@@ -1,0 +1,51 @@
+<%- include('../partials/head', { app: true, noindex: true }) %>
+<%
+  const nav = [
+    ['dashboard', '/admin', 'Dashboard', 'layout-dashboard'],
+    ['clients', '/admin/clients', 'Clients', 'users'],
+    ['payments', '/admin/payments', 'Payments', 'credit-card'],
+    ['enquiries', '/admin/enquiries', 'Enquiries', 'inbox'],
+    ['packages', '/admin/packages', 'Packages', 'package'],
+    ['account', '/admin/account', 'My account', 'key-round'],
+  ];
+%>
+<div class="admin">
+  <aside class="admin-sidebar" id="admin-sidebar" data-sidebar>
+    <a class="brand" href="/admin" aria-label="Dashboard">
+      <span class="brand-mark" aria-hidden="true"><%= site.monogram %></span>
+      <span class="brand-text"><span class="brand-name"><%= site.brand %></span><span class="brand-sub">Clients &amp; payments</span></span>
+    </a>
+    <nav class="admin-nav" aria-label="Admin">
+      <% nav.forEach(([key, href, label, icon]) => { %>
+        <a href="<%= href %>" class="<%= section === key ? 'is-active' : '' %>" <%- section === key ? 'aria-current="page"' : '' %>>
+          <%- h.icon(icon, { size: 18 }) %><span><%= label %></span>
+          <% if (key === 'enquiries' && newEnquiryCount) { %><span class="nav-count" aria-label="<%= newEnquiryCount %> new"><%= newEnquiryCount %></span><% } %>
+        </a>
+      <% }) %>
+    </nav>
+    <div class="admin-sidebar-foot">
+      <a href="/" target="_blank" rel="noopener"><%- h.icon('external-link', { size: 16 }) %> View website</a>
+      <% if (sandbox) { %><span class="status status-warn small">PayFast sandbox</span><% } %>
+      <form method="post" action="/logout">
+        <input type="hidden" name="_csrf" value="<%= csrf() %>">
+        <button class="btn btn-ghost btn-sm btn-block" type="submit"><%- h.icon('log-out', { size: 16 }) %> Sign out</button>
+      </form>
+    </div>
+  </aside>
+  <div class="admin-body">
+    <header class="admin-topbar">
+      <button class="menu-toggle admin-menu" type="button" aria-expanded="false" aria-controls="admin-sidebar" data-sidebar-toggle>
+        <span class="sr-only">Menu</span><span class="menu-icon" aria-hidden="true"><i></i><i></i></span>
+      </button>
+      <span class="admin-topbar-title"><%= title %></span>
+      <span class="admin-user"><%- h.icon('user', { size: 16 }) %> <%= user.name %></span>
+    </header>
+    <main id="main" class="admin-main">
+      <% if (weakPassword && section !== 'account') { %>
+        <div class="weak-banner" role="status">
+          <%- h.icon('circle-alert', { size: 20 }) %>
+          <p><strong>Your password is easy to guess.</strong> Change it before the site goes live, because this dashboard holds client details and payment records.</p>
+          <a class="btn btn-gold btn-sm" href="/admin/account">Change password</a>
+        </div>
+      <% } %>
+      <%- include('../partials/flash') %>

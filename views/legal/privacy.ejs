@@ -1,0 +1,38 @@
+<%- include('../partials/head', { page: 'legal' }) %>
+<%- include('../partials/nav') %>
+<main id="main">
+  <section class="page-hero slim">
+    <div class="hero-bg" aria-hidden="true"><div class="hero-glow"></div></div>
+    <div class="container page-hero-inner">
+      <p class="eyebrow"><span class="dot"></span> Legal</p>
+      <h1 class="display-lg">Privacy <em>Policy</em></h1>
+    </div>
+  </section>
+  <section class="section section-tight">
+    <div class="container prose">
+      <p class="muted small">This policy explains how <%= site.brand %> collects and protects your personal information in line with the Protection of Personal Information Act (POPIA).</p>
+
+      <h2>What we collect</h2>
+      <p>When you buy a package: your name, email address, cellphone number, anything you tell us about your goal, and, for clients under 18, a parent or guardian's name and number. We also keep a record of your payments. When you send an enquiry: your name, email address, optional phone number and your message.</p>
+
+      <h2>Why we collect it</h2>
+      <p>Only to provide your coaching: to contact you about your onboarding and sessions, to manage your package and payments, and to answer your enquiries.</p>
+
+      <h2>Payments</h2>
+      <p>Payments are processed by PayFast. Your card or bank details are entered on PayFast's site and are never seen or stored by this website. We receive confirmation of your payment and a transaction reference.</p>
+
+      <h2>How we protect it</h2>
+      <p>Your information is stored on a secured server. Connections are encrypted, and only <%= site.coach %> can access client records.</p>
+
+      <h2>Sharing</h2>
+      <p>Your information is never sold. It is only shared with PayFast to process payments, or where the law requires it.</p>
+
+      <h2>Your rights</h2>
+      <p>You may ask to see, correct or delete your personal information at any time, and you may object to its processing. Payment records may need to be kept for as long as tax law requires. Contact us using the details below. You also have the right to lodge a complaint with the Information Regulator of South Africa.</p>
+
+      <h2>Contact</h2>
+      <p>Responsible party: <%= site.coach %>, <%= site.brand %>, <%= site.location %>. Email <a class="link" href="mailto:<%= site.email %>"><%= site.email %></a>.</p>
+    </div>
+  </section>
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>

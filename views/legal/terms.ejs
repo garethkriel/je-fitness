@@ -1,0 +1,38 @@
+<%- include('../partials/head', { page: 'legal' }) %>
+<%- include('../partials/nav') %>
+<main id="main">
+  <section class="page-hero slim">
+    <div class="hero-bg" aria-hidden="true"><div class="hero-glow"></div></div>
+    <div class="container page-hero-inner">
+      <p class="eyebrow"><span class="dot"></span> Legal</p>
+      <h1 class="display-lg">Terms of <em>Service</em></h1>
+    </div>
+  </section>
+  <section class="section section-tight">
+    <div class="container prose">
+      <p class="muted small">These terms apply to personal training and coaching provided by <%= site.coach %> trading as <%= site.brand %> (&ldquo;<%= site.brand %>&rdquo;), <%= site.location %>.</p>
+
+      <h2>1. Services</h2>
+      <p><%= site.brand %> offers online coaching programs, which include a diet plan, a training program and regular check-ins. What each package includes is listed on the <a class="link" href="/packages">packages page</a> at the time you buy it.</p>
+
+      <h2>2. Payment</h2>
+      <p>Packages are paid in advance through PayFast, or by another method agreed with <%= site.coach %>. Monthly packages cover one month from the date your payment is confirmed. Once-off packages (such as the 12 Week Transformation and the Once-Off Program) cover the full period stated on the package. If you pay for your next period before the current one ends, the new period starts when the current one finishes.</p>
+
+      <h2>3. Cancellations and refunds</h2>
+      <p>Monthly packages are rolling and have no lock-in: to stop, simply don't pay for the next month. Once-off packages are paid up front for the whole block. Because your program is prepared as soon as you join, payments for a period that has already started are generally not refundable. If you believe you were charged in error, contact <%= site.coach %> within 7 days and it will be resolved fairly.</p>
+
+      <h2>4. Health and safety</h2>
+      <p>Exercise carries an inherent risk of injury. By buying a package you confirm that you are medically fit to exercise, or have clearance from a doctor, and that you will tell <%= site.coach %> about any injury, illness or medical condition. Nutrition guidance is not a substitute for medical advice. Stop exercising and seek medical help if you feel unwell.</p>
+
+      <h2>5. Clients under 18</h2>
+      <p>Clients under 18 may only be coached with the consent of a parent or legal guardian, who accepts these terms on their behalf.</p>
+
+      <h2>6. Programs and plans</h2>
+      <p>Training programs and diet plans are written for your personal use and may not be resold or shared publicly.</p>
+
+      <h2>7. Contact</h2>
+      <p>Questions about these terms: <a class="link" href="mailto:<%= site.email %>"><%= site.email %></a>.</p>
+    </div>
+  </section>
+<%- include('../partials/footer') %>
+<%- include('../partials/scripts') %>

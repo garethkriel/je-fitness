@@ -1,0 +1,31 @@
+<%- include('_top') %>
+<div class="admin-head">
+  <div>
+    <a class="back-link" href="/admin/clients"><%- h.icon('arrow-left', { size: 14 }) %> Clients</a>
+    <h1 class="display-md">Add a <em>client</em></h1>
+    <p class="muted small">For clients who pay by EFT or cash, or who you want to send a payment link to.</p>
+  </div>
+</div>
+
+<form method="post" action="/admin/clients" class="panel form narrow-form">
+  <input type="hidden" name="_csrf" value="<%= csrf() %>">
+  <% if (values.enquiry_id) { %><input type="hidden" name="enquiry_id" value="<%= values.enquiry_id %>"><p class="form-alert info"><%- h.icon('inbox', { size: 18 }) %> Details copied from their enquiry. The enquiry will be marked as handled.</p><% } %>
+  <div class="grid-2">
+    <%- include('../partials/field', { name: 'first_name', label: 'First name', attrs: 'required maxlength="60"' }) %>
+    <%- include('../partials/field', { name: 'last_name', label: 'Last name', attrs: 'required maxlength="60"' }) %>
+  </div>
+  <div class="grid-2">
+    <%- include('../partials/field', { name: 'email', label: 'Email address', type: 'email', attrs: 'required maxlength="254"' }) %>
+    <%- include('../partials/field', { name: 'phone', label: 'Cellphone', type: 'tel', optional: true, attrs: 'maxlength="16"' }) %>
+  </div>
+  <%- include('../partials/field', { name: 'goal', label: 'Goal', type: 'textarea', rows: 2, optional: true, attrs: 'maxlength="500"' }) %>
+  <div class="grid-2">
+    <%- include('../partials/field', { name: 'guardian_name', label: 'Guardian name', optional: true, hint: 'For clients under 18', attrs: 'maxlength="120"' }) %>
+    <%- include('../partials/field', { name: 'guardian_phone', label: 'Guardian cellphone', type: 'tel', optional: true, attrs: 'maxlength="16"' }) %>
+  </div>
+  <div class="form-actions">
+    <a class="btn btn-ghost" href="/admin/clients">Cancel</a>
+    <button class="btn btn-gold" type="submit"><%- h.icon('user-plus', { size: 16 }) %> Add client</button>
+  </div>
+</form>
+<%- include('_bottom') %>

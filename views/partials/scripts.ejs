@@ -1,0 +1,14 @@
+<% if (!locals.app) { %>
+<script src="/vendor/gsap/gsap.min.js" defer></script>
+<script src="/vendor/gsap/ScrollTrigger.min.js" defer></script>
+<script src="/vendor/lenis/lenis.min.js" defer></script>
+<% } %>
+<script src="/js/main.js" defer></script>
+<% if (locals.three) { %>
+<script type="importmap" nonce="<%= cspNonce %>">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/jsm/"}}</script>
+<script type="module" src="/js/scene.js"></script>
+<% } %>
+<% (locals.extraScripts || []).forEach((src) => { %><script src="<%= src %>" defer></script>
+<% }) %>
+</body>
+</html>

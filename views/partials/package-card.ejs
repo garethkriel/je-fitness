@@ -1,0 +1,28 @@
+<% const features = locals.compact ? pkg.features.slice(0, 4) : pkg.features; %>
+<article class="pkg-card<%= pkg.featured ? ' is-featured' : '' %>" data-tilt>
+  <span class="pkg-glare" aria-hidden="true"></span>
+  <div class="pkg-top">
+    <span class="pkg-icon"><%- h.icon(pkg.icon, { size: 22 }) %></span>
+    <% if (pkg.badge) { %><span class="badge<%= pkg.featured ? ' badge-gold' : '' %>"><%= pkg.badge %></span><% } %>
+  </div>
+  <p class="pkg-audience"><%= pkg.label %></p>
+  <h3 class="pkg-name"><%= pkg.name %></h3>
+  <% if (pkg.tagline) { %><p class="pkg-tagline"><%= pkg.tagline %></p><% } %>
+  <p class="pkg-price"><span class="amount"><%= h.money(pkg.price_cents) %></span><span class="per"><%= pkg.billingLabel %></span></p>
+  <p class="pkg-checkin">
+    <% if (pkg.price_note) { %>
+      <%- h.icon('receipt', { size: 16 }) %> <%= pkg.price_note %>
+    <% } else { %>
+      <%- h.icon(pkg.billing === 'monthly' ? 'refresh-cw' : 'calendar-check', { size: 16 }) %> <%= pkg.billing === 'monthly' ? 'Rolling monthly, cancel any time' : `Paid once, covers ${pkg.periodLabel}` %>
+    <% } %>
+  </p>
+  <ul class="pkg-features">
+    <% features.forEach((f) => { %><li><%- h.icon('check', { size: 16 }) %><span><%= f %></span></li><% }) %>
+    <% if (locals.compact && pkg.features.length > features.length) { %>
+      <li class="pkg-more"><a href="/packages#<%= pkg.slug %>">+ <%= pkg.features.length - features.length %> more included</a></li>
+    <% } %>
+  </ul>
+  <a class="btn <%= pkg.featured ? 'btn-gold' : 'btn-outline' %> btn-block" href="/checkout/<%= pkg.slug %>" aria-label="Pay and start <%= pkg.name %>">
+    Pay &amp; start <%- h.icon('arrow-right', { size: 18 }) %>
+  </a>
+</article>

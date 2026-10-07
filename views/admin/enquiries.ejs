@@ -1,0 +1,49 @@
+<%- include('_top') %>
+<div class="admin-head">
+  <div>
+    <h1 class="display-md">Enquiries</h1>
+    <p class="muted small">Messages sent from the contact form on the website.</p>
+  </div>
+</div>
+
+<nav class="chip-row" aria-label="Filter by status">
+  <% [['', 'All'], ['new', 'New'], ['handled', 'Handled']].forEach(([v, l]) => { %>
+    <a class="chip<%= status === v ? ' is-active' : '' %>" href="/admin/enquiries<%= v ? '?status=' + v : '' %>" <%- status === v ? 'aria-current="page"' : '' %>><%= l %></a>
+  <% }) %>
+</nav>
+
+<% if (!enquiries.length) { %>
+  <div class="empty-state"><%- h.icon('inbox', { size: 30 }) %><h3>No enquiries<%= status ? ` marked ${status}` : '' %></h3><p class="muted">When someone uses the contact form, their message appears here.</p></div>
+<% } else { %>
+  <div class="enquiry-list">
+    <% enquiries.forEach((e) => { %>
+      <article class="panel enquiry<%= e.status === 'new' ? ' is-new' : '' %>" id="enquiry-<%= e.id %>">
+        <header>
+          <div>
+            <strong><%= e.name %></strong>
+            <span class="muted small block"><%= h.dateTime(e.created_at) %> &middot; Interested in: <%= e.interestLabel %></span>
+          </div>
+          <span class="status status-<%= e.status === 'new' ? 'warn' : 'neutral' %>"><%= e.status %></span>
+        </header>
+        <p class="pre enquiry-message"><%= e.message %></p>
+        <div class="enquiry-contact small">
+          <a class="link" href="mailto:<%= e.email %>"><%= e.email %></a>
+          <% if (e.phone) { %><a class="link" href="tel:<%= e.phone %>"><%= e.phone %></a><% } %>
+        </div>
+        <div class="enquiry-actions">
+          <a class="btn btn-gold btn-sm" href="mailto:<%= e.email %>?subject=<%= encodeURIComponent(`Re: your ${brand} enquiry`) %>"><%- h.icon('mail', { size: 16 }) %> Reply by email</a>
+          <% if (e.existing_client) { %>
+            <a class="btn btn-ghost btn-sm" href="/admin/clients/<%= e.existing_client %>"><%- h.icon('user', { size: 16 }) %> View client</a>
+          <% } else { %>
+            <a class="btn btn-ghost btn-sm" href="/admin/clients/new?enquiry=<%= e.id %>"><%- h.icon('user-plus', { size: 16 }) %> Add as client</a>
+          <% } %>
+          <form method="post" action="/admin/enquiries/<%= e.id %>/toggle" class="inline-form">
+            <input type="hidden" name="_csrf" value="<%= csrf() %>"><input type="hidden" name="back" value="/admin/enquiries<%= status ? '?status=' + status : '' %>">
+            <button class="btn btn-ghost btn-sm" type="submit"><%- h.icon(e.status === 'new' ? 'circle-check' : 'undo-2', { size: 16 }) %> <%= e.status === 'new' ? 'Mark handled' : 'Mark as new' %></button>
+          </form>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+<% } %>
+<%- include('_bottom') %>

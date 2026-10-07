@@ -1,0 +1,22 @@
+<%
+  const fid = locals.id || `f-${name}`;
+  const err = locals.errors && errors[name];
+  const current = locals.values && values[name] !== undefined && values[name] !== null ? values[name] : (locals.value ?? '');
+  const described = [locals.hint ? `${fid}-hint` : '', err ? `${fid}-error` : ''].filter(Boolean).join(' ');
+  const kind = locals.type || 'text';
+%>
+<div class="field<%= err ? ' has-error' : '' %><%= locals.cls ? ' ' + cls : '' %>">
+  <label for="<%= fid %>"><%= label %><% if (locals.optional) { %> <span class="optional">optional</span><% } %></label>
+  <% if (kind === 'textarea') { %>
+    <textarea id="<%= fid %>" name="<%= name %>" rows="<%= locals.rows || 3 %>" <%- locals.attrs || '' %> <%- described ? `aria-describedby="${described}"` : '' %> <%- err ? 'aria-invalid="true"' : '' %>><%= current %></textarea>
+  <% } else if (kind === 'select') { %>
+    <select id="<%= fid %>" name="<%= name %>" <%- locals.attrs || '' %> <%- described ? `aria-describedby="${described}"` : '' %> <%- err ? 'aria-invalid="true"' : '' %>>
+      <option value="">Choose...</option>
+      <% options.forEach(([v, l]) => { %><option value="<%= v %>" <%= String(current) === String(v) ? 'selected' : '' %>><%= l %></option><% }) %>
+    </select>
+  <% } else { %>
+    <input id="<%= fid %>" name="<%= name %>" type="<%= kind %>" value="<%= kind === 'password' ? '' : current %>" <%- locals.attrs || '' %> <%- described ? `aria-describedby="${described}"` : '' %> <%- err ? 'aria-invalid="true"' : '' %>>
+  <% } %>
+  <% if (locals.hint) { %><p class="hint" id="<%= fid %>-hint"><%= hint %></p><% } %>
+  <% if (err) { %><p class="field-error" id="<%= fid %>-error"><%- h.icon('circle-alert', { size: 14 }) %> <%= err %></p><% } %>
+</div>

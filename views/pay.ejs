@@ -1,0 +1,47 @@
+<%- include('partials/head') %>
+<%- include('partials/nav') %>
+<main id="main" class="auth-main">
+  <div class="hero-bg" aria-hidden="true"><div class="hero-glow"></div><div class="hero-lines"></div></div>
+  <div class="auth-card checkout-card" data-intro>
+    <p class="eyebrow"><span class="dot"></span> Secure payment</p>
+
+    <% if (order.status !== 'pending') { %>
+      <h1 class="display-md">This link is <em>closed.</em></h1>
+      <p class="muted">This payment request is no longer active. Choose your package again, or email <a class="link" href="mailto:<%= site.email %>"><%= site.email %></a> if you need help.</p>
+      <a class="btn btn-gold btn-block" href="/packages">View packages</a>
+    <% } else { %>
+      <h1 class="display-md">Almost <em>there,</em> <%= client.first_name %>.</h1>
+
+      <% if (cancelled) { %>
+        <div class="form-alert info"><%- h.icon('info', { size: 20 }) %><div><strong>Payment cancelled.</strong> No money was taken. You can try again below whenever you're ready.</div></div>
+      <% } %>
+
+      <dl class="order-summary">
+        <div><dt>Package</dt><dd><%= order.package_name %></dd></div>
+        <div><dt>Covers</dt><dd><%= pkg ? (pkg.billing === 'monthly' ? '1 month' : pkg.periodLabel) : `${order.period_count} ${order.period_unit}${order.period_count === 1 ? '' : 's'}` %></dd></div>
+        <div><dt>Name</dt><dd><%= client.first_name %> <%= client.last_name %></dd></div>
+        <div><dt>Email</dt><dd><%= client.email %></dd></div>
+        <div><dt>Reference</dt><dd class="mono"><%= order.reference %></dd></div>
+        <div class="order-total"><dt>Total</dt><dd><%= h.money(order.amount_cents) %></dd></div>
+      </dl>
+
+      <% if (sandbox) { %>
+        <div class="form-alert info"><%- h.icon('info', { size: 20 }) %><div><strong>Test mode.</strong> PayFast sandbox is active, so no real money will be charged.</div></div>
+      <% } %>
+
+      <form method="post" action="<%= action %>" data-busy-form>
+        <% fields.forEach(([name, value]) => { %><input type="hidden" name="<%= name %>" value="<%= value %>">
+        <% }) %>
+        <button class="btn btn-gold btn-lg btn-block" type="submit" data-magnetic>
+          <%- h.icon('lock', { size: 18 }) %> Pay <%= h.money(order.amount_cents) %> with PayFast
+        </button>
+      </form>
+      <p class="small muted checkout-note">
+        <%- h.icon('shield-check', { size: 16 }) %>
+        You'll be taken to PayFast to pay by card, instant EFT, SnapScan or Mobicred, then brought back here for your confirmation.
+      </p>
+      <p class="small muted center">Wrong details? <a class="link" href="/packages">Start again</a></p>
+    <% } %>
+  </div>
+</main>
+<%- include('partials/scripts', { extraScripts: ['/js/forms.js'] }) %>

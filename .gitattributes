@@ -1,0 +1,5 @@
+# Keep Unix line endings in the repository (servers run Linux).
+* text=auto eol=lf
+*.jpg binary
+*.png binary
+*.woff2 binary

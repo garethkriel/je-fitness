@@ -1,0 +1,42 @@
+<%
+  const links = [['/', 'Home'], ['/packages', 'Packages'], ['/about', 'About'], ['/#contact', 'Contact']];
+%>
+<header class="site-header" data-header>
+  <div class="container nav-inner">
+    <a class="brand" href="/" aria-label="<%= site.brand %>, home">
+      <span class="brand-mark" aria-hidden="true"><%= site.monogram %></span>
+      <span class="brand-text">
+        <span class="brand-name"><%= site.brand %></span>
+        <span class="brand-sub"><%= site.tagline %> · <%= site.city %></span>
+      </span>
+    </a>
+
+    <nav class="nav-links" aria-label="Main">
+      <% links.forEach(([href, label]) => { %>
+        <a href="<%= href %>" <%- path === href ? 'aria-current="page"' : '' %>><%= label %></a>
+      <% }) %>
+    </nav>
+
+    <div class="nav-actions">
+      <% if (user) { %>
+        <a class="nav-account" href="/admin"><%- h.icon('layout-dashboard', { size: 18 }) %><span>Dashboard</span></a>
+      <% } %>
+      <a class="btn btn-gold btn-sm" href="/packages" data-magnetic>Get started</a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" data-menu-toggle>
+        <span class="sr-only">Menu</span>
+        <span class="menu-icon" aria-hidden="true"><i></i><i></i></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobile-menu" data-mobile-menu hidden>
+  <nav aria-label="Mobile">
+    <% links.forEach(([href, label], i) => { %>
+      <a href="<%= href %>" class="mobile-link"><span class="mobile-index">0<%= i + 1 %></span><%= label %></a>
+    <% }) %>
+  </nav>
+  <div class="mobile-contact">
+    <a href="mailto:<%= site.email %>"><%- h.icon('mail', { size: 18 }) %> <%= site.email %></a>
+  </div>
+</div>

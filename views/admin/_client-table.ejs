@@ -1,0 +1,70 @@
+<%
+  const until = (c) => {
+    if (!c.paid_until) return '';
+    if (c.daysLeft > 1) return `${c.daysLeft} days left`;
+    if (c.daysLeft === 1) return 'ends tomorrow';
+    if (c.daysLeft === 0) return 'ends today';
+    return `${Math.abs(c.daysLeft)} day${Math.abs(c.daysLeft) === 1 ? '' : 's'} ago`;
+  };
+%>
+<div class="panel table-panel">
+  <div class="table-wrap">
+    <table class="table roster-table">
+      <thead>
+        <tr>
+          <th scope="col">Client</th>
+          <th scope="col">Package paid for</th>
+          <th scope="col">Paid until</th>
+          <th scope="col">Payment status</th>
+          <th scope="col"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% clients.forEach((c) => { %>
+          <tr class="roster-<%= c.status %>">
+            <td>
+              <a class="client-cell" href="/admin/clients/<%= c.id %>">
+                <span class="avatar" aria-hidden="true"><%= c.first_name[0] %><%= (c.last_name || ' ')[0] %></span>
+                <span><strong><%= c.name %></strong><span class="muted small block"><%= c.email %><%= c.phone ? ` · ${c.phone}` : '' %></span></span>
+              </a>
+            </td>
+            <td>
+              <% if (c.paid_package) { %>
+                <strong class="cell-main"><%= c.paid_package %></strong>
+                <span class="muted small block"><%= h.money(c.last_amount_cents) %> paid <%= h.date(c.last_paid_at) %></span>
+              <% } else { %>
+                <span class="muted">Nothing paid yet</span>
+              <% } %>
+            </td>
+            <td class="nowrap">
+              <% if (c.paid_until) { %>
+                <%= h.date(c.paid_until) %>
+                <span class="small block <%= c.daysLeft < 0 ? 'text-bad' : c.daysLeft <= 7 ? 'text-warn' : 'muted' %>"><%= until(c) %></span>
+              <% } else { %><span class="muted">-</span><% } %>
+            </td>
+            <td>
+              <span class="status status-<%= c.statusClass %>"><%= c.statusLabel %></span>
+              <% if (c.pending_package) { %>
+                <span class="muted small block pending-note"><%- h.icon('clock', { size: 13 }) %> Awaiting <%= h.money(c.pending_amount_cents) %> for <%= c.pending_package %></span>
+              <% } %>
+            </td>
+            <td class="actions">
+              <div class="row-actions">
+                <% if (c.pending_token) { %>
+                  <button type="button" class="btn btn-ghost btn-sm" data-copy-text="<%= payUrl(c.pending_token) %>" title="Copy the payment link they still need to pay"><%- h.icon('copy', { size: 14 }) %> Copy pay link</button>
+                <% } else if (['overdue', 'due', 'finished'].includes(c.status) && c.paid_package_id) { %>
+                  <form method="post" action="/admin/clients/<%= c.id %>/payment-link" class="inline-form">
+                    <input type="hidden" name="_csrf" value="<%= csrf() %>">
+                    <input type="hidden" name="package_id" value="<%= c.paid_package_id %>">
+                    <button class="btn btn-<%= c.status === 'overdue' ? 'gold' : 'ghost' %> btn-sm" type="submit" title="Create a payment link for <%= c.paid_package %>"><%- h.icon('link', { size: 14 }) %> Payment link</button>
+                  </form>
+                <% } %>
+                <a class="btn btn-ghost btn-sm" href="/admin/clients/<%= c.id %>#payments">Open</a>
+              </div>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>

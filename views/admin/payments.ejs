@@ -1,0 +1,79 @@
+<%- include('_top') %>
+<% const orderClass = { pending: 'warn', paid: 'good', cancelled: 'neutral', failed: 'bad' }; %>
+<div class="admin-head">
+  <div>
+    <h1 class="display-md">Payments</h1>
+    <p class="muted small">PayFast payments are confirmed automatically. EFT and cash payments are recorded on the client's page.</p>
+  </div>
+  <div class="admin-head-actions">
+    <a class="btn btn-ghost btn-sm" href="/admin/payments.csv<%= status ? '?status=' + status : '' %>"><%- h.icon('download', { size: 16 }) %> Export CSV</a>
+  </div>
+</div>
+
+<nav class="chip-row" aria-label="Filter by status">
+  <% [['', 'All'], ['paid', 'Paid'], ['pending', 'Awaiting payment'], ['cancelled', 'Cancelled'], ['failed', 'Failed']].forEach(([v, l]) => { %>
+    <a class="chip<%= status === v ? ' is-active' : '' %>" href="/admin/payments<%= v ? '?status=' + v : '' %>" <%- status === v ? 'aria-current="page"' : '' %>><%= l %></a>
+  <% }) %>
+</nav>
+
+<div class="panel table-panel">
+  <% if (!orders.length) { %>
+    <p class="muted small empty-line">No payments<%= status ? ` with status "${status}"` : '' %> yet.</p>
+  <% } else { %>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th scope="col">Date</th><th scope="col">Client</th><th scope="col">Package</th><th scope="col" class="num">Amount</th><th scope="col">Status</th><th scope="col">Method</th><th scope="col">Reference</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody>
+        <% orders.forEach((o) => { %>
+          <tr>
+            <td class="muted small nowrap"><%= h.dateTime(o.paid_at || o.created_at) %></td>
+            <td><a class="link-plain" href="/admin/clients/<%= o.client_id %>#payments"><%= o.first_name %> <%= o.last_name %></a><span class="muted small block"><%= o.email %></span></td>
+            <td><%= o.package_name %></td>
+            <td class="num"><%= h.money(o.amount_cents) %></td>
+            <td><span class="status status-<%= orderClass[o.status] %>"><%= o.status === 'pending' ? 'awaiting payment' : o.status %></span></td>
+            <td class="muted small"><%= o.method ? (METHODS[o.method] || o.method) : '-' %></td>
+            <td class="mono small"><%= o.reference %></td>
+            <td class="actions">
+              <% if (o.status === 'pending') { %>
+                <button type="button" class="btn btn-ghost btn-sm" data-copy-text="<%= o.url %>"><%- h.icon('copy', { size: 14 }) %> Copy link</button>
+                <form method="post" action="/admin/orders/<%= o.id %>/mark-paid" class="inline-form" data-confirm="Mark <%= o.reference %> (<%= h.money(o.amount_cents) %>) as paid? Only do this if you received the money another way.">
+                  <input type="hidden" name="_csrf" value="<%= csrf() %>"><input type="hidden" name="back" value="/admin/payments<%= status ? '?status=' + status : '' %>">
+                  <label class="sr-only" for="mp-<%= o.id %>">Paid by</label>
+                  <select id="mp-<%= o.id %>" name="method" class="select-sm"><% MANUAL_METHODS.forEach((k) => { %><option value="<%= k %>"><%= METHODS[k] %></option><% }) %></select>
+                  <button class="btn btn-ghost btn-sm" type="submit">Mark paid</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+
+<details class="panel itn-log">
+  <summary class="panel-title"><%- h.icon('activity', { size: 18 }) %> PayFast notification log <span class="muted small">(for troubleshooting)</span></summary>
+  <% if (!events.length) { %>
+    <p class="muted small">No notifications received from PayFast yet. Notifications need a public web address; they cannot reach a site running on localhost.</p>
+  <% } else { %>
+  <div class="table-wrap">
+    <table class="table compact">
+      <thead><tr><th scope="col">Received</th><th scope="col">Order</th><th scope="col">PayFast status</th><th scope="col">Amount</th><th scope="col">Result</th><th scope="col">IP</th></tr></thead>
+      <tbody>
+        <% events.forEach((e) => { %>
+          <tr class="<%= e.valid ? '' : 'row-warn' %>">
+            <td class="muted small"><%= h.dateTime(e.received_at) %></td>
+            <td class="mono small"><%= e.order_reference %></td>
+            <td><%= e.payment_status %></td>
+            <td class="num"><%= e.amount_gross %></td>
+            <td><%= e.valid ? 'Accepted' : `Rejected: ${e.reason}` %></td>
+            <td class="mono small muted"><%= e.ip %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</details>
+<%- include('_bottom') %>

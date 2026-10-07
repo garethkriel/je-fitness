@@ -1,0 +1,206 @@
+<%- include('_top') %>
+<%
+  const m = membership;
+  const orderClass = { pending: 'warn', paid: 'good', cancelled: 'neutral', failed: 'bad' };
+  const wa = client.phone && /^0\d{9}$/.test(client.phone) ? `https://wa.me/27${client.phone.slice(1)}` : null;
+  const back = `/admin/clients/${client.id}`;
+  const activePackages = packages.filter((p) => p.active);
+  // Pre-select the package they last paid for, so renewing is one click.
+  const packageOptions = () => activePackages.map((p) =>
+    `<option value="${p.id}" data-price="${p.price_cents / 100}"${p.id === m.paid_package_id ? ' selected' : ''}>${h.money(p.price_cents)} · ${p.name.replace(/[<>&"]/g, '')}</option>`
+  ).join('');
+%>
+<div class="admin-head client-head">
+  <div class="client-id">
+    <span class="avatar large" aria-hidden="true"><%= client.first_name[0] %><%= (client.last_name || ' ')[0] %></span>
+    <div>
+      <a class="back-link" href="/admin/clients"><%- h.icon('arrow-left', { size: 14 }) %> Clients</a>
+      <h1 class="display-md"><%= client.first_name %> <em><%= client.last_name %></em></h1>
+      <p class="client-meta">
+        <span class="status status-<%= m.statusClass %>"><%= m.statusLabel %></span>
+        <% if (client.archived) { %><span class="status status-neutral">Archived</span><% } %>
+        <% if (m.paid_package) { %><span><%= m.paid_package %> <span class="muted"><%= m.daysLeft > 0 ? 'paid until' : 'ended' %> <%= h.date(m.paid_until) %></span></span><% } %>
+        <% if (m.pending_package) { %><span class="muted">Awaiting <%= h.money(m.pending_amount_cents) %> for <%= m.pending_package %></span><% } %>
+      </p>
+    </div>
+  </div>
+  <div class="client-actions">
+    <a class="btn btn-ghost btn-sm" href="mailto:<%= client.email %>"><%- h.icon('mail', { size: 16 }) %> Email</a>
+    <% if (client.phone) { %><a class="btn btn-ghost btn-sm" href="tel:<%= client.phone %>"><%- h.icon('phone', { size: 16 }) %> Call</a><% } %>
+    <% if (wa) { %><a class="btn btn-ghost btn-sm" href="<%= wa %>" target="_blank" rel="noopener"><%- h.icon('message-circle', { size: 16 }) %> WhatsApp</a><% } %>
+  </div>
+</div>
+
+<nav class="tabs admin-tabs" role="tablist" aria-label="Client sections" data-tabs>
+  <a class="tab" href="#payments" role="tab" id="tab-payments" aria-controls="payments" data-tab="payments"><%- h.icon('credit-card', { size: 16 }) %><span>Payments</span></a>
+  <a class="tab" href="#details" role="tab" id="tab-details" aria-controls="details" data-tab="details"><%- h.icon('user', { size: 16 }) %><span>Details &amp; notes</span></a>
+  <% if (enquiries.length) { %><a class="tab" href="#enquiries" role="tab" id="tab-enquiries" aria-controls="enquiries" data-tab="enquiries"><%- h.icon('inbox', { size: 16 }) %><span>Enquiries</span><span class="tab-count"><%= enquiries.length %></span></a><% } %>
+</nav>
+
+<!-- ============================== PAYMENTS -->
+<section id="payments" class="tab-panel" role="tabpanel" aria-labelledby="tab-payments" data-panel>
+  <% if (payLink) { %>
+    <div class="panel reset-panel">
+      <h2 class="panel-title"><%- h.icon('link', { size: 18 }) %> Payment link ready</h2>
+      <p class="muted small">Send this link to <%= client.first_name %>. It opens a secure PayFast payment for <strong><%= payLink.packageName %></strong> (<%= h.money(payLink.amount) %>). Their package activates as soon as they pay.</p>
+      <div class="copy-row">
+        <input type="text" readonly value="<%= payLink.url %>" aria-label="Payment link" data-copy-source>
+        <button class="btn btn-gold btn-sm" type="button" data-copy><%- h.icon('copy', { size: 16 }) %> Copy</button>
+        <a class="btn btn-ghost btn-sm" href="mailto:<%= client.email %>?subject=<%= encodeURIComponent(`Your ${site.brand} payment link`) %>&body=<%= encodeURIComponent(`Hi ${client.first_name},\n\nHere is your secure payment link for ${payLink.packageName} (${h.money(payLink.amount)}):\n${payLink.url}\n\nThanks,\n${site.coach}`) %>"><%- h.icon('mail', { size: 16 }) %> Email it</a>
+      </div>
+    </div>
+  <% } %>
+
+  <div class="grid-2 action-panels">
+    <form method="post" action="/admin/clients/<%= client.id %>/payment-link" class="panel form" data-price-form>
+      <input type="hidden" name="_csrf" value="<%= csrf() %>">
+      <h2 class="panel-title"><%- h.icon('link', { size: 18 }) %> Send a payment link</h2>
+      <p class="muted small">Creates a secure PayFast link you can send by email or WhatsApp.</p>
+      <div class="field">
+        <label for="pl-package">Package</label>
+        <select id="pl-package" name="package_id" required data-package-select><%- packageOptions() %></select>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="pl-amount">Amount (R) <span class="optional">optional</span></label>
+          <input id="pl-amount" name="amount" type="number" min="0" max="100000" step="0.01" inputmode="decimal" data-amount-input>
+          <p class="hint">Leave blank for the package price.</p>
+        </div>
+        <div class="field">
+          <label for="pl-note">Note <span class="optional">optional</span></label>
+          <input id="pl-note" name="note" maxlength="300" placeholder="e.g. November">
+        </div>
+      </div>
+      <button class="btn btn-gold btn-sm" type="submit"><%- h.icon('link', { size: 16 }) %> Create payment link</button>
+    </form>
+
+    <form method="post" action="/admin/clients/<%= client.id %>/record-payment" class="panel form" data-price-form data-confirm="Record this payment? Only do this once you have received the money.">
+      <input type="hidden" name="_csrf" value="<%= csrf() %>">
+      <h2 class="panel-title"><%- h.icon('receipt', { size: 18 }) %> Record a payment</h2>
+      <p class="muted small">Received money by EFT, cash or card machine? Record it here to activate the package.</p>
+      <div class="field">
+        <label for="rp-package">Package</label>
+        <select id="rp-package" name="package_id" required data-package-select><%- packageOptions() %></select>
+      </div>
+      <div class="grid-3">
+        <div class="field">
+          <label for="rp-method">Paid by</label>
+          <select id="rp-method" name="method" required>
+            <% MANUAL_METHODS.forEach((k) => { %><option value="<%= k %>"><%= METHODS[k] %></option><% }) %>
+          </select>
+        </div>
+        <div class="field">
+          <label for="rp-amount">Amount (R)</label>
+          <input id="rp-amount" name="amount" type="number" min="0" max="100000" step="0.01" inputmode="decimal" data-amount-input>
+        </div>
+        <div class="field">
+          <label for="rp-note">Note <span class="optional">optional</span></label>
+          <input id="rp-note" name="note" maxlength="300" placeholder="e.g. EFT ref 1234">
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" type="submit"><%- h.icon('circle-check', { size: 16 }) %> Record payment</button>
+    </form>
+  </div>
+
+  <h2 class="panel-title section-title"><%- h.icon('credit-card', { size: 18 }) %> Payment history</h2>
+  <% if (!orders.length) { %>
+    <div class="empty-state"><%- h.icon('credit-card', { size: 30 }) %><h3>No payments yet</h3><p class="muted">Send a payment link or record a payment above.</p></div>
+  <% } else { %>
+    <div class="panel table-panel">
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th scope="col">Reference</th><th scope="col">Package</th><th scope="col" class="num">Amount</th><th scope="col">Status</th><th scope="col">Covers</th><th scope="col">Method</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+          <tbody>
+            <% orders.forEach((o) => { %>
+              <tr>
+                <td class="mono small nowrap"><%= o.reference %><span class="muted block"><%= h.date(o.paid_at || o.created_at) %><%= o.created_by === 'coach' ? ' · by you' : '' %></span></td>
+                <td><%= o.package_name %><% if (o.note) { %><span class="muted small block"><%= o.note %></span><% } %></td>
+                <td class="num"><%= h.money(o.amount_cents) %></td>
+                <td><span class="status status-<%= orderClass[o.status] %>"><%= o.status === 'pending' ? 'awaiting payment' : o.status %></span></td>
+                <td class="muted small nowrap"><%= o.period_start ? `${h.date(o.period_start)} - ${h.date(o.period_end)}` : '-' %></td>
+                <td class="muted small"><%= o.method ? (METHODS[o.method] || o.method) + (o.pf_payment_id ? ` #${o.pf_payment_id}` : '') : '-' %></td>
+                <td class="actions">
+                  <% if (o.status === 'pending') { %>
+                    <button type="button" class="btn btn-ghost btn-sm" data-copy-text="<%= o.url %>"><%- h.icon('copy', { size: 14 }) %> Copy link</button>
+                    <form method="post" action="/admin/orders/<%= o.id %>/mark-paid" class="inline-form" data-confirm="Mark <%= o.reference %> (<%= h.money(o.amount_cents) %>) as paid? Only do this if you received the money another way.">
+                      <input type="hidden" name="_csrf" value="<%= csrf() %>"><input type="hidden" name="back" value="<%= back %>#payments">
+                      <label class="sr-only" for="mp-<%= o.id %>">Paid by</label>
+                      <select id="mp-<%= o.id %>" name="method" class="select-sm"><% MANUAL_METHODS.forEach((k) => { %><option value="<%= k %>"><%= METHODS[k] %></option><% }) %></select>
+                      <button class="btn btn-ghost btn-sm" type="submit">Mark paid</button>
+                    </form>
+                    <form method="post" action="/admin/orders/<%= o.id %>/cancel" class="inline-form" data-confirm="Cancel <%= o.reference %>? Its payment link will stop working.">
+                      <input type="hidden" name="_csrf" value="<%= csrf() %>"><input type="hidden" name="back" value="<%= back %>#payments">
+                      <button class="btn btn-ghost btn-sm" type="submit">Cancel</button>
+                    </form>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% } %>
+</section>
+
+<!-- ============================== DETAILS -->
+<section id="details" class="tab-panel" role="tabpanel" aria-labelledby="tab-details" data-panel>
+  <div class="client-overview">
+    <form method="post" action="/admin/clients/<%= client.id %>" class="panel form">
+      <input type="hidden" name="_csrf" value="<%= csrf() %>">
+      <h2 class="panel-title"><%- h.icon('user', { size: 18 }) %> Contact details</h2>
+      <div class="grid-2">
+        <%- include('../partials/field', { name: 'first_name', label: 'First name', value: client.first_name, id: 'c-first', attrs: 'required maxlength="60"' }) %>
+        <%- include('../partials/field', { name: 'last_name', label: 'Last name', value: client.last_name, id: 'c-last', attrs: 'required maxlength="60"' }) %>
+      </div>
+      <div class="grid-2">
+        <%- include('../partials/field', { name: 'email', label: 'Email', type: 'email', value: client.email, id: 'c-email', attrs: 'required maxlength="254"' }) %>
+        <%- include('../partials/field', { name: 'phone', label: 'Cellphone', type: 'tel', value: client.phone, id: 'c-phone', optional: true, attrs: 'maxlength="16"' }) %>
+      </div>
+      <%- include('../partials/field', { name: 'goal', label: 'Goal', type: 'textarea', rows: 2, value: client.goal, id: 'c-goal', optional: true, attrs: 'maxlength="500"' }) %>
+      <div class="grid-2">
+        <%- include('../partials/field', { name: 'guardian_name', label: 'Guardian name', value: client.guardian_name, id: 'c-gname', optional: true, attrs: 'maxlength="120"' }) %>
+        <%- include('../partials/field', { name: 'guardian_phone', label: 'Guardian cellphone', type: 'tel', value: client.guardian_phone, id: 'c-gphone', optional: true, attrs: 'maxlength="16"' }) %>
+      </div>
+      <button class="btn btn-gold btn-sm form-submit" type="submit"><%- h.icon('save', { size: 16 }) %> Save details</button>
+    </form>
+
+    <div class="stack">
+      <form method="post" action="/admin/clients/<%= client.id %>/notes" class="panel form">
+        <input type="hidden" name="_csrf" value="<%= csrf() %>">
+        <h2 class="panel-title"><%- h.icon('lock', { size: 18 }) %> Private notes</h2>
+        <label for="client-notes" class="sr-only">Private notes</label>
+        <textarea id="client-notes" name="notes" rows="5" maxlength="5000" placeholder="Only you can see these notes, e.g. preferred session times, injuries mentioned on the onboarding call."><%= client.notes || '' %></textarea>
+        <button class="btn btn-ghost btn-sm" type="submit"><%- h.icon('save', { size: 16 }) %> Save notes</button>
+      </form>
+
+      <article class="panel">
+        <h2 class="panel-title"><%- h.icon('info', { size: 18 }) %> Record</h2>
+        <dl class="detail-list">
+          <div><dt>Client since</dt><dd><%= h.date(client.created_at) %> (<%= { checkout: 'website checkout', coach: 'added by you', enquiry: 'from an enquiry' }[client.source] %>)</dd></div>
+          <div><dt>Terms &amp; health declaration</dt><dd><%= client.consent_at ? `Accepted ${h.date(client.consent_at)}` : 'Not recorded (added manually)' %></dd></div>
+          <div><dt>Payments made</dt><dd><%= m.paid_count %> (<%= h.money(m.total_paid_cents) %> in total)</dd></div>
+        </dl>
+        <form method="post" action="/admin/clients/<%= client.id %>/archive" data-confirm="<%= client.archived ? 'Restore this client to the active list?' : 'Archive this client? They will be hidden from the client list, but their payment history is kept.' %>">
+          <input type="hidden" name="_csrf" value="<%= csrf() %>">
+          <button class="btn btn-ghost btn-sm" type="submit"><%- h.icon(client.archived ? 'archive-restore' : 'archive', { size: 16 }) %> <%= client.archived ? 'Restore client' : 'Archive client' %></button>
+        </form>
+      </article>
+    </div>
+  </div>
+</section>
+
+<% if (enquiries.length) { %>
+<!-- ============================== ENQUIRIES -->
+<section id="enquiries" class="tab-panel" role="tabpanel" aria-labelledby="tab-enquiries" data-panel>
+  <div class="enquiry-list">
+    <% enquiries.forEach((e) => { %>
+      <article class="panel enquiry">
+        <header><strong><%= h.dateTime(e.created_at) %></strong><span class="status status-<%= e.status === 'new' ? 'warn' : 'neutral' %>"><%= e.status %></span></header>
+        <p class="pre"><%= e.message %></p>
+      </article>
+    <% }) %>
+  </div>
+</section>
+<% } %>
+<%- include('_bottom') %>

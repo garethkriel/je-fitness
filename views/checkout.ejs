@@ -1,0 +1,96 @@
+<%- include('partials/head', { noindex: true }) %>
+<%- include('partials/nav') %>
+<% const minorLocked = Boolean(pkg.max_age); %>
+<main id="main">
+  <section class="section join-section">
+    <div class="hero-bg" aria-hidden="true"><div class="hero-glow"></div></div>
+    <div class="container join-layout">
+      <div class="join-main">
+        <a class="back-link" href="/packages#<%= pkg.slug %>"><%- h.icon('arrow-left', { size: 16 }) %> All packages</a>
+        <p class="eyebrow"><span class="dot"></span> Checkout</p>
+        <h1 class="display-lg">Your <em>details.</em></h1>
+        <p class="lead muted">No account needed. Fill in your details, then pay securely on PayFast. <%= site.coach %> will email you <%= site.replyTime %> to set up your onboarding call.</p>
+        <%- include('partials/flash') %>
+
+        <% if (Object.keys(errors).length) { %>
+          <div class="form-alert" role="alert" tabindex="-1" data-error-summary>
+            <%- h.icon('circle-alert', { size: 20 }) %>
+            <div><strong>Please fix <%= Object.keys(errors).length === 1 ? 'one thing' : Object.keys(errors).length + ' things' %> below.</strong></div>
+          </div>
+        <% } %>
+
+        <form method="post" action="/checkout/<%= pkg.slug %>" class="form card form-card checkout-form" data-busy-form data-checkout-form>
+          <input type="hidden" name="_csrf" value="<%= csrf() %>">
+
+          <div class="grid-2">
+            <%- include('partials/field', { name: 'first_name', label: 'First name', attrs: 'autocomplete="given-name" required maxlength="60"' }) %>
+            <%- include('partials/field', { name: 'last_name', label: 'Last name', attrs: 'autocomplete="family-name" required maxlength="60"' }) %>
+          </div>
+          <div class="grid-2">
+            <%- include('partials/field', { name: 'email', label: 'Email address', type: 'email', attrs: 'autocomplete="email" required maxlength="254" inputmode="email"' }) %>
+            <%- include('partials/field', { name: 'phone', label: 'Cellphone number', type: 'tel', hint: 'e.g. 081 234 5678', attrs: 'autocomplete="tel" required inputmode="tel" maxlength="16"' }) %>
+          </div>
+          <%- include('partials/field', { name: 'goal', label: 'What would you like to achieve?', type: 'textarea', rows: 3, optional: true, hint: `A sentence or two helps ${site.coach} prepare for your onboarding call.`, attrs: 'maxlength="500"' }) %>
+
+          <% if (minorLocked) { %>
+            <input type="hidden" name="under_18" value="on">
+          <% } else { %>
+            <label class="check">
+              <input type="checkbox" name="under_18" data-under-18 <%= values.under_18 ? 'checked' : '' %>>
+              <span>This package is for someone under 18</span>
+            </label>
+          <% } %>
+
+          <div class="guardian card-inset" data-guardian <%= values.under_18 || minorLocked ? '' : 'hidden' %>>
+            <p class="guardian-title"><%- h.icon('shield', { size: 18 }) %> Parent or guardian <span class="muted small">required for under-18s</span></p>
+            <div class="grid-2">
+              <%- include('partials/field', { name: 'guardian_name', label: 'Guardian full name', attrs: 'maxlength="120" autocomplete="off" data-guardian-required' }) %>
+              <%- include('partials/field', { name: 'guardian_phone', label: 'Guardian cellphone', type: 'tel', attrs: 'maxlength="16" inputmode="tel" data-guardian-required' }) %>
+            </div>
+            <label class="check<%= errors.guardian_consent ? ' has-error' : '' %>">
+              <input type="checkbox" name="guardian_consent" data-guardian-required <%= values.guardian_consent ? 'checked' : '' %>>
+              <span>I am the parent or legal guardian and I consent to this coaching.</span>
+            </label>
+            <% if (errors.guardian_consent) { %><p class="field-error"><%- h.icon('circle-alert', { size: 14 }) %> <%= errors.guardian_consent %></p><% } %>
+          </div>
+
+          <label class="check<%= errors.health_declaration ? ' has-error' : '' %>">
+            <input type="checkbox" name="health_declaration" required <%= values.health_declaration ? 'checked' : '' %>>
+            <span>I confirm I have no medical condition that prevents me from exercising, or I have clearance from a doctor.</span>
+          </label>
+          <% if (errors.health_declaration) { %><p class="field-error"><%- h.icon('circle-alert', { size: 14 }) %> <%= errors.health_declaration %></p><% } %>
+
+          <label class="check<%= errors.agree_terms ? ' has-error' : '' %>">
+            <input type="checkbox" name="agree_terms" required <%= values.agree_terms ? 'checked' : '' %>>
+            <span>I agree to the <a class="link" href="/terms" target="_blank">terms of service</a> and consent to my information being processed as described in the <a class="link" href="/privacy" target="_blank">privacy policy</a>.</span>
+          </label>
+          <% if (errors.agree_terms) { %><p class="field-error"><%- h.icon('circle-alert', { size: 14 }) %> <%= errors.agree_terms %></p><% } %>
+
+          <button type="submit" class="btn btn-gold btn-lg btn-block">Continue to payment <%- h.icon('lock', { size: 18 }) %></button>
+        </form>
+      </div>
+
+      <aside class="join-summary" aria-label="Package summary">
+        <div class="summary-card<%= pkg.featured ? ' is-featured' : '' %>">
+          <div class="pkg-top">
+            <span class="pkg-icon"><%- h.icon(pkg.icon, { size: 22 }) %></span>
+            <% if (pkg.badge) { %><span class="badge<%= pkg.featured ? ' badge-gold' : '' %>"><%= pkg.badge %></span><% } %>
+          </div>
+          <p class="pkg-audience"><%= pkg.label %></p>
+          <h2 class="pkg-name"><%= pkg.name %></h2>
+          <p class="pkg-price"><span class="amount"><%= h.money(pkg.price_cents) %></span><span class="per"><%= pkg.billingLabel %></span></p>
+          <% if (pkg.price_note) { %><p class="pkg-checkin"><%- h.icon('receipt', { size: 16 }) %> <%= pkg.price_note %></p><% } %>
+          <ul class="pkg-features">
+            <% pkg.features.forEach((f) => { %><li><%- h.icon('check', { size: 16 }) %><span><%= f %></span></li><% }) %>
+          </ul>
+          <div class="summary-secure">
+            <%- h.icon('shield-check', { size: 20 }) %>
+            <p class="small">You'll pay on PayFast's secure page by card, instant EFT or SnapScan. Card details never touch this website.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+</main>
+<footer class="site-footer slim"><div class="container footer-bottom"><p class="small muted">&copy; <%= year %> <%= site.brand %></p><p class="small muted"><a href="/terms">Terms</a> &middot; <a href="/privacy">Privacy</a></p></div></footer>
+<%- include('partials/scripts', { extraScripts: ['/js/forms.js'] }) %>

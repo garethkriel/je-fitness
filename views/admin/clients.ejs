@@ -1,0 +1,45 @@
+<%- include('_top') %>
+<% const filtered = filters.q || filters.package || filters.status; %>
+<div class="admin-head">
+  <div>
+    <h1 class="display-md"><%= filters.archived ? 'Archived clients' : 'Clients' %></h1>
+    <p class="muted small"><%= clients.length %> client<%= clients.length === 1 ? '' : 's' %><%= filtered ? ` of ${total} match your filters` : '' %></p>
+  </div>
+  <div class="admin-head-actions">
+    <a class="btn btn-ghost btn-sm" href="/admin/clients.csv<%= queryString ? '?' + queryString : '' %>"><%- h.icon('download', { size: 16 }) %> Export CSV</a>
+    <a class="btn btn-gold btn-sm" href="/admin/clients/new"><%- h.icon('user-plus', { size: 16 }) %> Add client</a>
+  </div>
+</div>
+
+<form class="filter-bar" method="get" action="/admin/clients" role="search">
+  <% if (filters.archived) { %><input type="hidden" name="archived" value="1"><% } %>
+  <div class="field search-field">
+    <label for="q" class="sr-only">Search clients</label>
+    <%- h.icon('search', { size: 18 }) %>
+    <input id="q" name="q" type="search" value="<%= filters.q %>" placeholder="Search name, email or phone" maxlength="100">
+  </div>
+  <div class="field">
+    <label for="fp" class="sr-only">Package</label>
+    <select id="fp" name="package" data-autosubmit>
+      <option value="">All packages</option>
+      <% packages.forEach((p) => { %><option value="<%= p.fullName %>" <%= filters.package === p.fullName ? 'selected' : '' %>><%= p.fullName %><%= p.active ? '' : ' (hidden)' %></option><% }) %>
+    </select>
+  </div>
+  <div class="field">
+    <label for="fs" class="sr-only">Payment status</label>
+    <select id="fs" name="status" data-autosubmit>
+      <option value="">Any payment status</option>
+      <% STATUS_ORDER.forEach((k) => { %><option value="<%= k %>" <%= filters.status === k ? 'selected' : '' %>><%= STATUS[k].label %> (<%= counts[k] %>)</option><% }) %>
+    </select>
+  </div>
+  <button class="btn btn-ghost btn-sm" type="submit">Filter</button>
+  <% if (filtered) { %><a class="link small" href="/admin/clients<%= filters.archived ? '?archived=1' : '' %>">Clear</a><% } %>
+  <a class="link small push-right" href="/admin/clients<%= filters.archived ? '' : '?archived=1' %>"><%= filters.archived ? 'Back to clients' : 'View archived' %></a>
+</form>
+
+<% if (!clients.length) { %>
+  <div class="empty-state"><%- h.icon('users', { size: 30 }) %><h3><%= filtered ? 'No clients found' : filters.archived ? 'No archived clients' : 'No clients yet' %></h3><p class="muted">Clients are added automatically when they pay on the website. You can also <a class="link" href="/admin/clients/new">add one yourself</a>.</p></div>
+<% } else { %>
+  <%- include('_client-table') %>
+<% } %>
+<%- include('_bottom') %>

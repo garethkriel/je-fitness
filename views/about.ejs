@@ -1,0 +1,140 @@
+<% const q = site.qualification; %>
+<%- include('partials/head', { description: `Meet ${site.coach}, a qualified personal trainer (${q.title}, ${q.institution}, ${q.accreditation} accredited) at ${site.brand} in ${site.location}. Online coaching with diet plans, training programs and weekly check-ins.` }) %>
+<%- include('partials/nav') %>
+<main id="main">
+  <section class="page-hero about-hero">
+    <div class="hero-bg" aria-hidden="true"><div class="hero-glow"></div><div class="hero-lines"></div></div>
+    <div class="container about-hero-inner">
+      <div class="about-hero-copy">
+        <p class="eyebrow" data-intro><span class="dot"></span> Your coach</p>
+        <h1 class="display-xl" data-split>Train with <em><%= site.coach %>.</em></h1>
+        <p class="lead muted" data-intro><%= site.about.intro %></p>
+        <ul class="about-facts" data-intro>
+          <li><a href="#qualifications"><%- h.icon('graduation-cap', { size: 18 }) %> Qualified personal trainer (<%= q.accreditation %> accredited)</a></li>
+          <li><%- h.icon('map-pin', { size: 18 }) %> <%= site.location %></li>
+          <li><%- h.icon('salad', { size: 18 }) %> Diet &amp; training plans built for you</li>
+          <li><%- h.icon('calendar-check', { size: 18 }) %> Check-ins every week</li>
+        </ul>
+      </div>
+      <div class="about-portrait" data-intro>
+        <% if (coachPhoto) { %>
+          <img src="<%= coachPhoto %>" alt="<%= site.coach %>, personal trainer at <%= site.brand %>" width="560" height="700" loading="eager">
+        <% } else { %>
+          <div class="scene scene-frame tall" data-scene="kettlebell" aria-hidden="true"></div>
+        <% } %>
+        <div class="portrait-tag"><span class="brand-mark small" aria-hidden="true"><%= site.monogram %></span><span><%= site.coach %><small><%= site.brand %></small></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="approach-title">
+    <div class="container story">
+      <div class="story-head" data-reveal>
+        <p class="eyebrow"><span class="dot"></span> The approach</p>
+        <h2 class="display-lg" id="approach-title" data-split>A plan built for <em>you.</em></h2>
+      </div>
+      <div class="story-body" data-stagger>
+        <% site.about.story.forEach((para, i) => { %><p class="<%= i === 0 ? 'lead' : 'muted' %>"><%= para %></p><% }) %>
+        <ul class="check-list">
+          <% site.about.points.forEach((p) => { %><li><%- h.icon('check', { size: 18 }) %><span><%= p %></span></li><% }) %>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-dark" id="qualifications" aria-labelledby="qual-title">
+    <div class="container qual">
+      <figure class="qual-cert" data-reveal>
+        <a class="cert-frame" href="<%= q.image %>" data-cert-open data-tilt aria-label="View <%= site.coach %>'s <%= q.title %> full size">
+          <img src="<%= q.preview %>" width="640" height="905" loading="lazy" decoding="async"
+               alt="<%= q.awardedTo %>'s <%= q.title %> from <%= q.institution %>, dated <%= q.completed %>">
+          <span class="cert-glare" aria-hidden="true"></span>
+          <span class="cert-zoom" aria-hidden="true"><%- h.icon('maximize-2', { size: 15 }) %> View full size</span>
+        </a>
+        <figcaption class="small muted">Click to view full size. <%= site.coach %>'s ID number is left off for privacy.</figcaption>
+      </figure>
+      <div class="qual-copy">
+        <p class="eyebrow" data-reveal><span class="dot"></span> Qualified &amp; accredited</p>
+        <h2 class="display-lg" id="qual-title" data-split>A qualified <em>personal trainer.</em></h2>
+        <p class="lead muted" data-reveal>
+          <%= site.coach %> completed the <%= q.title %> at <%= q.institution %> in <%= q.completedYear %>. The course is accredited by
+          <abbr title="<%= q.accreditationFull %>"><%= q.accreditation %></abbr>, the education and training authority for the sport sector in South Africa.
+        </p>
+        <dl class="qual-facts" data-stagger>
+          <div><dt><%- h.icon('graduation-cap', { size: 18 }) %> Qualification</dt><dd><%= q.title %></dd></div>
+          <div><dt><%- h.icon('award', { size: 18 }) %> Institution</dt><dd><%= q.institution %></dd></div>
+          <div><dt><%- h.icon('shield-check', { size: 18 }) %> Accreditation</dt><dd><%= q.accreditation %> <span class="muted small"><%= q.accreditationNo %></span></dd></div>
+          <div><dt><%- h.icon('calendar-check', { size: 18 }) %> Completed</dt><dd><%= q.completed %></dd></div>
+          <div><dt><%- h.icon('file-text', { size: 18 }) %> Certificate no.</dt><dd><%= q.certificateNo %></dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="skills-title">
+    <div class="container">
+      <div class="section-head center" data-reveal>
+        <p class="eyebrow"><span class="dot"></span> What the qualification covers</p>
+        <h2 class="display-lg" id="skills-title" data-split>What <%= site.coach %> is <em>qualified to do.</em></h2>
+      </div>
+      <div class="skills-grid" data-stagger>
+        <% q.skills.forEach((s) => { %>
+          <article class="pillar skill">
+            <span class="pillar-icon small"><%- h.icon(s.icon, { size: 20 }) %></span>
+            <h3><%= s.title %></h3>
+            <p class="muted"><%= s.text %></p>
+          </article>
+        <% }) %>
+      </div>
+      <details class="subjects" data-reveal>
+        <summary><span>All <%= q.subjects.length %> subjects on the certificate</span><span class="faq-toggle" aria-hidden="true"><%- h.icon('plus', { size: 18 }) %></span></summary>
+        <ul class="subject-list">
+          <% q.subjects.forEach((s) => { %><li><%- h.icon('check', { size: 15 }) %><%= s %></li><% }) %>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <dialog class="cert-dialog" data-cert-dialog aria-label="<%= q.title %>">
+    <form method="dialog"><button class="cert-close" aria-label="Close"><%- h.icon('x', { size: 22 }) %></button></form>
+    <img src="<%= q.image %>" width="1240" height="1754" loading="lazy" decoding="async" alt="<%= q.awardedTo %>'s <%= q.title %> from <%= q.institution %>, dated <%= q.completed %>">
+  </dialog>
+
+
+  <section class="section section-dark" aria-labelledby="online-title">
+    <div class="container">
+      <div class="section-head center" data-reveal>
+        <p class="eyebrow"><span class="dot"></span> Online coaching</p>
+        <h2 class="display-lg" id="online-title" data-split>Coached on <em>your schedule.</em></h2>
+      </div>
+      <div class="pillars" data-stagger>
+        <% site.onlineIncludes.forEach((item) => { %>
+          <article class="pillar">
+            <span class="pillar-icon"><%- h.icon(item.icon, { size: 26 }) %></span>
+            <h3><%= item.title %></h3>
+            <p class="muted"><%= item.text %></p>
+          </article>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="expect-title">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <p class="eyebrow"><span class="dot"></span> Getting started</p>
+        <h2 class="display-lg" id="expect-title" data-split>How it <em>works.</em></h2>
+      </div>
+      <ol class="timeline" data-stagger>
+        <% site.process.forEach((step, i) => { %>
+          <li><span class="timeline-num">0<%= i + 1 %></span><div><h3><%= step.title %></h3><p class="muted"><%= step.text %></p></div></li>
+        <% }) %>
+      </ol>
+      <div class="center-cta" data-reveal>
+        <a class="btn btn-gold btn-lg" href="/packages" data-magnetic>Choose your package <%- h.icon('arrow-right', { size: 18 }) %></a>
+      </div>
+    </div>
+  </section>
+
+<%- include('partials/footer') %>
+<%- include('partials/scripts', { three: !coachPhoto }) %>

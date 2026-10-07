@@ -1,0 +1,35 @@
+<%- include('partials/head') %>
+<%- include('partials/nav') %>
+<main id="main" class="auth-main">
+  <div class="hero-bg" aria-hidden="true"><div class="hero-glow"></div><div class="hero-lines"></div></div>
+  <div class="auth-card result-card" data-intro>
+    <div data-payment-status data-token="<%= order.pay_token %>" data-status="<%= order.status %>">
+      <div class="result-state" data-state="waiting" <%= order.status === 'paid' ? 'hidden' : '' %>>
+        <span class="result-icon spinner" aria-hidden="true"></span>
+        <h1 class="display-md">Confirming your <em>payment...</em></h1>
+        <p class="muted">PayFast is confirming your payment with us. This usually takes a few seconds, and you can safely close this page.</p>
+      </div>
+      <div class="result-state" data-state="paid" <%= order.status === 'paid' ? '' : 'hidden' %>>
+        <span class="result-icon is-good"><%- h.icon('circle-check', { size: 34 }) %></span>
+        <h1 class="display-md">You're <em>in,</em> <%= client.first_name %>!</h1>
+        <p class="muted">Your payment for <strong><%= order.package_name %></strong> is confirmed.</p>
+      </div>
+      <p class="sr-only" aria-live="polite" data-status-live></p>
+    </div>
+
+    <dl class="order-summary">
+      <div><dt>Reference</dt><dd class="mono"><%= order.reference %></dd></div>
+      <div><dt>Package</dt><dd><%= order.package_name %></dd></div>
+      <div><dt>Amount</dt><dd><%= h.money(order.amount_cents) %></dd></div>
+    </dl>
+
+    <div class="next-steps">
+      <p class="eyebrow"><span class="dot"></span> What happens next</p>
+      <p class="muted"><%= site.coach %> will email you at <strong><%= client.email %></strong> <%= site.replyTime %> to set up your onboarding call. Keep your reference number handy.</p>
+    </div>
+    <div class="result-actions">
+      <a class="btn btn-ghost btn-block" href="/">Back to the home page</a>
+    </div>
+  </div>
+</main>
+<%- include('partials/scripts', { extraScripts: ['/js/forms.js'] }) %>

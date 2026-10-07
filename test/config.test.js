@@ -1,0 +1,70 @@
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+
+const ROOT = path.join(__dirname, '..');
+
+// Load src/config.js in a fresh process. Every variable is set explicitly (empty counts) so values in .env never leak in.
+function loadConfig(vars) {
+  const env = {
+    ...process.env,
+    NODE_ENV: '',
+    PUBLIC_URL: '',
+    SESSION_SECRET: 'x'.repeat(48),
+    PAYFAST_SANDBOX: '',
+    PAYFAST_MERCHANT_ID: 'LIVE-ID',
+    PAYFAST_MERCHANT_KEY: 'live-key',
+    PAYFAST_PASSPHRASE: '',
+    PAYFAST_SANDBOX_MERCHANT_ID: '',
+    PAYFAST_SANDBOX_MERCHANT_KEY: '',
+    PAYFAST_SANDBOX_PASSPHRASE: '',
+    ...vars,
+  };
+  const child = spawnSync(process.execPath, ['-e', "process.stdout.write(JSON.stringify(require('./src/config').payfast))"], {
+    cwd: ROOT,
+    env,
+    encoding: 'utf8',
+  });
+  return child.status === 0 ? { payfast: JSON.parse(child.stdout) } : { error: child.stderr };
+}
+
+test('test payments on a development machine, even with live details saved', () => {
+  const { payfast } = loadConfig({});
+  assert.equal(payfast.sandbox, true);
+  assert.equal(payfast.host, 'sandbox.payfast.co.za');
+  assert.notEqual(payfast.merchantId, 'LIVE-ID');
+});
+
+test('a sandbox account is used for test payments when one is set', () => {
+  const { payfast } = loadConfig({ PAYFAST_SANDBOX_MERCHANT_ID: 'SB-ID', PAYFAST_SANDBOX_MERCHANT_KEY: 'sb-key' });
+  assert.equal(payfast.publicSandbox, false);
+  assert.equal(payfast.merchantId, 'SB-ID');
+  assert.equal(payfast.signCheckout, true);
+});
+
+test('live payments with the live account in production', () => {
+  const { payfast } = loadConfig({ NODE_ENV: 'production', PUBLIC_URL: 'https://jefitness.co.za' });
+  assert.equal(payfast.sandbox, false);
+  assert.equal(payfast.host, 'www.payfast.co.za');
+  assert.equal(payfast.merchantId, 'LIVE-ID');
+  assert.equal(payfast.merchantKey, 'live-key');
+});
+
+test('PAYFAST_SANDBOX=true keeps a production server in test mode', () => {
+  const { payfast } = loadConfig({ NODE_ENV: 'production', PUBLIC_URL: 'https://jefitness.co.za', PAYFAST_SANDBOX: 'true' });
+  assert.equal(payfast.sandbox, true);
+});
+
+test('live payments refuse to start without a public https address', () => {
+  for (const url of ['', 'http://jefitness.co.za', 'https://localhost:3000']) {
+    const { error } = loadConfig({ PAYFAST_SANDBOX: 'false', PUBLIC_URL: url });
+    assert.match(error || '', /PUBLIC_URL/, `PUBLIC_URL=${url || '(empty)'}`);
+  }
+});
+
+test('live payments refuse to start without merchant details', () => {
+  const { error } = loadConfig({ NODE_ENV: 'production', PUBLIC_URL: 'https://jefitness.co.za', PAYFAST_MERCHANT_KEY: '' });
+  assert.match(error || '', /PAYFAST_MERCHANT_KEY/);
+});

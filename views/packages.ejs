@@ -1,0 +1,60 @@
+<%- include('partials/head', { description: `${site.brand} online coaching packages${fromPrice ? ' from ' + h.money(fromPrice) + ' a month' : ''}: a diet plan, a training program and a check-in every week with ${site.coach}.` }) %>
+<%- include('partials/nav') %>
+<main id="main">
+  <%- include('partials/flash') %>
+
+  <section class="page-hero">
+    <div class="hero-bg" aria-hidden="true"><div class="hero-glow"></div><div class="hero-lines"></div></div>
+    <div class="page-hero-scene scene" data-scene="plates" aria-hidden="true"></div>
+    <div class="container page-hero-inner">
+      <p class="eyebrow" data-intro><span class="dot"></span> Packages &amp; prices</p>
+      <h1 class="display-xl" data-split>Coached online, <em>on your schedule.</em></h1>
+      <p class="lead muted" data-intro>Choose a program, pay securely with PayFast, and <%= site.coach %> will be in touch <%= site.replyTime %> to set up your onboarding call.</p>
+    </div>
+  </section>
+
+  <section class="section section-tight" aria-labelledby="includes-title">
+    <div class="container">
+      <div class="section-head center" data-reveal>
+        <p class="eyebrow"><span class="dot"></span> Every package includes</p>
+        <h2 class="display-lg" id="includes-title" data-split>What you <em>get.</em></h2>
+      </div>
+      <div class="pillars" data-stagger>
+        <% site.onlineIncludes.forEach((item) => { %>
+          <article class="pillar">
+            <span class="pillar-icon"><%- h.icon(item.icon, { size: 26 }) %></span>
+            <h3><%= item.title %></h3>
+            <p class="muted"><%= item.text %></p>
+          </article>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-dark" id="online" aria-labelledby="pick-title">
+    <div class="container">
+      <div class="section-head center" data-reveal>
+        <h2 class="display-lg" id="pick-title" data-split>Pick your <em>program.</em></h2>
+        <p class="muted">Choose the commitment that suits you.</p>
+      </div>
+      <div class="pkg-grid" data-stagger>
+        <% packages.forEach((pkg) => { %><div id="<%= pkg.slug %>" class="pkg-anchor"><%- include('partials/package-card', { pkg, compact: false }) %></div><% }) %>
+      </div>
+      <p class="center small muted fine-print">Monthly packages can be cancelled any time &middot; Once-off programs are paid up front</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="coverage-title">
+    <div class="container">
+      <div class="callout" data-reveal>
+        <span class="pillar-icon"><%- h.icon('map-pin', { size: 26 }) %></span>
+        <div>
+          <h2 class="display-md" id="coverage-title">Based in <em><%= site.city %>.</em></h2>
+          <p class="muted"><%= site.coach %> coaches clients in and around <%= site.location %>. You train on your own schedule, but the programs are for <%= site.city %> clients. Not sure whether you're close enough? <a class="link" href="mailto:<%= site.email %>">Send an email</a> and you'll get a straight answer.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<%- include('partials/footer') %>
+<%- include('partials/scripts', { three: true }) %>

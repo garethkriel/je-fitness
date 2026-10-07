@@ -1,0 +1,49 @@
+<%- include('_top') %>
+<div class="admin-head">
+  <div>
+    <h1 class="display-md">Packages</h1>
+    <p class="muted small">Changes show on the website immediately. Payments already made keep the price they were made at.</p>
+  </div>
+  <div class="admin-head-actions">
+    <a class="btn btn-ghost btn-sm" href="/packages" target="_blank" rel="noopener"><%- h.icon('external-link', { size: 16 }) %> View packages page</a>
+  </div>
+</div>
+
+  <div class="pkg-admin-grid">
+    <% packages.forEach((p) => { %>
+      <form method="post" action="/admin/packages/<%= p.id %>" class="panel form pkg-admin<%= p.active ? '' : ' is-inactive' %>" id="pkg-<%= p.id %>">
+        <input type="hidden" name="_csrf" value="<%= csrf() %>">
+        <div class="panel-head">
+          <h3 class="panel-title"><span class="pkg-icon small"><%- h.icon(p.icon, { size: 18 }) %></span> <%= p.name %></h3>
+          <span class="status status-<%= p.active ? 'good' : 'neutral' %>"><%= p.active ? 'Live' : 'Hidden' %></span>
+        </div>
+        <p class="hint"><%- h.icon('info', { size: 14 }) %>
+          <%= p.billing === 'monthly' ? 'Billed monthly' : 'Paid once' %>, each payment covers <%= p.periodLabel %><%= p.max_age ? ' · under-18s, guardian consent required' : '' %>.
+        </p>
+        <div class="grid-2">
+          <div class="field"><label for="n-<%= p.id %>">Name</label><input id="n-<%= p.id %>" name="name" value="<%= p.name %>" required maxlength="60"></div>
+          <div class="field">
+            <label for="pr-<%= p.id %>">Price (R) <span class="optional"><%= p.billingLabel %></span></label>
+            <input id="pr-<%= p.id %>" name="price" type="number" min="0" max="100000" step="1" value="<%= p.price_cents / 100 %>" required inputmode="numeric">
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="field"><label for="lb-<%= p.id %>">Label</label><input id="lb-<%= p.id %>" name="label" value="<%= p.label %>" maxlength="40"></div>
+          <div class="field"><label for="bd-<%= p.id %>">Badge <span class="optional">optional</span></label><input id="bd-<%= p.id %>" name="badge" value="<%= p.badge %>" maxlength="30"></div>
+          <div class="field"><label for="so-<%= p.id %>">Display order</label><input id="so-<%= p.id %>" name="sort_order" type="number" min="0" max="99" value="<%= p.sort_order %>"></div>
+        </div>
+        <div class="field"><label for="tg-<%= p.id %>">Tagline</label><input id="tg-<%= p.id %>" name="tagline" value="<%= p.tagline %>" maxlength="160"></div>
+        <div class="field"><label for="pn-<%= p.id %>">Price note <span class="optional">optional</span></label><input id="pn-<%= p.id %>" name="price_note" value="<%= p.price_note %>" maxlength="60" placeholder="e.g. Works out to R933 / month"></div>
+        <div class="field">
+          <label for="ft-<%= p.id %>">What's included <span class="optional">one per line</span></label>
+          <textarea id="ft-<%= p.id %>" name="features" rows="5" maxlength="3000"><%= p.features.join('\n') %></textarea>
+        </div>
+        <div class="pkg-admin-foot">
+          <label class="check inline"><input type="checkbox" name="featured" <%= p.featured ? 'checked' : '' %>><span>Highlight in gold</span></label>
+          <label class="check inline"><input type="checkbox" name="active" <%= p.active ? 'checked' : '' %>><span>Show on website</span></label>
+          <button class="btn btn-gold btn-sm" type="submit"><%- h.icon('save', { size: 16 }) %> Save</button>
+        </div>
+      </form>
+    <% }) %>
+  </div>
+<%- include('_bottom') %>

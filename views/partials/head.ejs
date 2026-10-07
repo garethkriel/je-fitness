@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en-ZA">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= locals.title ? `${title} | ${site.brand}` : `${site.brand} | Personal Trainer in ${site.city}` %></title>
+  <meta name="description" content="<%= locals.description || `Online coaching with ${site.coach} in ${site.city}: diet plans, training programs and a check-in every week.` %>">
+  <meta name="theme-color" content="#08080a">
+  <meta name="color-scheme" content="dark">
+  <% if (locals.noindex) { %><meta name="robots" content="noindex, nofollow"><% } %>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="<%= site.brand %> | Personal Trainer in <%= site.city %>">
+  <meta property="og:description" content="Get coached online by <%= site.coach %>: a diet plan, a training program and a check-in every week.">
+  <script nonce="<%= cspNonce %>">document.documentElement.classList.add('js');if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('motion');</script>
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/vendor/fonts/manrope/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/vendor/fonts/cormorant/cormorant-garamond-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <% if (!locals.app) { %><link rel="stylesheet" href="/vendor/lenis/lenis.css"><% } %>
+  <link rel="stylesheet" href="/css/main.css">
+  <% if (locals.app) { %><link rel="stylesheet" href="/css/app.css"><% } %>
+</head>
+<body class="<%= locals.app ? 'is-app' : 'is-site' %> <%= locals.page ? 'page-' + page : '' %>">
+<a class="skip-link" href="#main">Skip to content</a>
