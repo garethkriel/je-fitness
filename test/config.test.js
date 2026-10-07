@@ -77,3 +77,23 @@ test('on Render the site uses its onrender.com address unless PUBLIC_URL is set'
   assert.equal(onRender.payfast.sandbox, false);
   assert.equal(loadConfig({ ...render, PUBLIC_URL: 'https://jefitness.co.za/' }).publicUrl, 'https://jefitness.co.za');
 });
+
+test('with DB_REQUIRE_DISK the site refuses to start until the disk folder exists', () => {
+  const os = require('node:os');
+  const fs = require('node:fs');
+  const disk = fs.mkdtempSync(path.join(os.tmpdir(), 'je-disk-'));
+  const open = (dbPath) =>
+    spawnSync(process.execPath, ['-e', "require('./src/db').db.close()"], {
+      cwd: ROOT,
+      env: { ...process.env, PUBLIC_URL: '', NODE_ENV: '', DB_REQUIRE_DISK: '1', DB_PATH: dbPath },
+      encoding: 'utf8',
+    });
+  try {
+    const missing = open(path.join(disk, 'not-mounted', 'je-fitness.sqlite'));
+    assert.notEqual(missing.status, 0);
+    assert.match(missing.stderr, /Attach the persistent disk/);
+    assert.equal(open(path.join(disk, 'je-fitness.sqlite')).status, 0);
+  } finally {
+    fs.rmSync(disk, { recursive: true, force: true });
+  }
+});

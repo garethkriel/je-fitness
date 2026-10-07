@@ -104,6 +104,7 @@ module.exports = {
   secureCookies: publicUrl.startsWith('https://'),
   trustProxy: parseTrustProxy(env.TRUST_PROXY),
   dbPath: path.resolve(ROOT, env.DB_PATH || 'data/je-fitness.sqlite'),
+  dbRequireExistingDir: bool(env.DB_REQUIRE_DISK, false),
   sessionSecret,
   payfast,
 };

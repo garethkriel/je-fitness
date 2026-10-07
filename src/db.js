@@ -5,7 +5,13 @@ const { DatabaseSync } = require('node:sqlite');
 const config = require('./config');
 const defaultPackages = require('./packages.seed');
 
-fs.mkdirSync(path.dirname(config.dbPath), { recursive: true });
+const dbDir = path.dirname(config.dbPath);
+// On a host, the database must live on a persistent disk. If the disk isn't mounted, refuse to start rather than
+// silently keeping clients and payments in a folder that is wiped on the next deploy.
+if (config.dbRequireExistingDir && !fs.existsSync(dbDir)) {
+  throw new Error(`Database folder ${dbDir} does not exist. Attach the persistent disk at ${dbDir} first.`);
+}
+fs.mkdirSync(dbDir, { recursive: true });
 const db = new DatabaseSync(config.dbPath);
 
 db.exec(`

@@ -24,6 +24,9 @@ services:
         value: production
       - key: DB_PATH
         value: /var/data/je-fitness.sqlite
+      # Refuse to start if the disk isn't mounted, instead of keeping data in a folder that's wiped on deploy.
+      - key: DB_REQUIRE_DISK
+        value: "1"
       # Proxy hops in front of the app on Render, so rate limits and PayFast's IP check see the real caller.
       - key: TRUST_PROXY
         value: "3"
